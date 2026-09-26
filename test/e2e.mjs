@@ -25,7 +25,7 @@ const base = `http://localhost:${server.address().port}/`;
 const sw = await readFile(join(root, 'sw.js'), 'utf8');
 const shell = [...sw.match(/const SHELL = \[([\s\S]*?)\];/)[1].matchAll(/'([^']+)'/g)].map(m => m[1]).filter(f => f !== './');
 for (const f of shell) await readFile(join(root, f));
-for (const f of ['app', 'names', 'sound', 'check', 'generate', 'tag', 'store', 'voice']) assert.ok(shell.includes(`js/${f}.js`), `sw.js is missing js/${f}.js`);
+for (const f of ['app', 'names', 'sound', 'check', 'generate', 'tag', 'store', 'voice', 'sayable']) assert.ok(shell.includes(`js/${f}.js`), `sw.js is missing js/${f}.js`);
 
 const browser = await pw.chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true });

@@ -2,6 +2,7 @@
 // will the vet snigger, can anyone spell it. Pure functions, no DOM.
 import { NAMES, BY_NAME, POPULAR_RANK, SPECIES } from './names.js';
 import { sound, words, callWords, plain, unvoice, editDistance, otherSpellings, VOWELS } from './sound.js';
+import { sayability } from './sayable.js';
 
 const PLACE = { dog: 'at the dog park', cat: 'at the vet', small: 'at the vet', bird: 'at the vet', fish: 'at the pet shop',
   reptile: 'at the vet', horse: 'at the stables' };
@@ -223,7 +224,23 @@ function yellCheck(s, species, name) {
   } else if (species === 'cat' && status === 'good') {
     text += ' Cats learn their names; they just choose when to answer.';
   }
-  return { id: 'yell', title, status, text };
+  return { id: 'yell', title, status, text, strength: score };
+}
+
+const SAY = {
+  known: ['good', 'A name people know, so nobody will stumble over it.'],
+  plain: ['good', 'Reads like an ordinary word, so people will know how to say it.'],
+  unusual: ['ok', 'Unusual. People will ask you to say it again the first time.'],
+  hard: ['warn', 'Most people won’t know how to say it. Expect to spell it out a lot.'],
+  vowel: ['bad', 'There’s no vowel in it, so there’s no way to say it.'],
+  repeat: ['bad', 'Nobody will know how many times to say each letter.'],
+  keyboard: ['bad', 'That’s a row of letters on a keyboard, not something anyone can say.'],
+  mash: ['bad', 'Nobody could read this out loud. It looks like someone sat on the keyboard.'],
+};
+
+function sayCheck(name) {
+  const [status, text] = SAY[sayability(name).why];
+  return { id: 'say', title: 'Can you say it?', status, text };
 }
 
 function commandCheck(s, species, name) {
@@ -313,7 +330,7 @@ function popularCheck(name, species) {
   const title = 'How common';
   const top = species === 'dog' || species === 'cat' ? 12 : 4;
   if (rank && rank <= top) return { id: 'popular', title, status: 'ok', text: `One of the most popular ${noun} names there is. Expect company ${place}.` };
-  if (rank) return { id: 'popular', title, status: 'good', text: `A popular ${noun} name, but not everywhere.` };
+  if (rank) return { id: 'popular', title, status: 'ok', text: `A popular ${noun} name. You’ll meet a few others ${place}.` };
   const elsewhere = ['dog', 'cat'].find(sp => sp !== species && POPULAR_RANK[sp].get(key));
   if (elsewhere) return { id: 'popular', title, status: 'good', text: `A common ${elsewhere} name, which makes it an unusual ${noun} name.` };
   const e = BY_NAME.get(key);
@@ -334,6 +351,7 @@ function spellCheck(name, raw) {
   if (alts.length) {
     const usual = !BY_NAME.has(key) && alts.find(a => BY_NAME.has(plain(a)));
     if (usual) { status = 'warn'; bits.push(`The usual spelling is ${usual}. Expect people to write that.`); }
+    else if (BY_NAME.has(key)) bits.push(`Spelled the usual way, though some people write ${orList(alts)}.`);
     else { status = 'ok'; bits.push(`People will also write it ${orList(alts)}.`); }
   }
   const say = pronounceNote(key);
@@ -399,7 +417,7 @@ const VERDICTS = {
   again: { label: 'Think again', stamp: 'Think again' },
   dont: { label: 'Please don’t', stamp: 'Please don’t' },
 };
-const PENALTY = { good: 0, info: 0, ok: 5, warn: 20, bad: 40 };
+const PENALTY = { good: 0, info: 0, ok: 6, warn: 20, bad: 40 };
 
 export function check(raw, ctx = {}) {
   const species = ctx.species || 'dog';
@@ -409,6 +427,7 @@ export function check(raw, ctx = {}) {
   const s = soundOf(name);
   const checks = [
     vetCheck(name, ctx.surname, s, species),
+    sayCheck(name),
     commandCheck(s, species, name),
     yellCheck(s, species, name),
     houseCheck(s, name, house),
@@ -421,13 +440,19 @@ export function check(raw, ctx = {}) {
   let id = score >= 95 ? 'great' : score >= 85 ? 'good' : score >= 70 ? 'fine' : score >= 45 ? 'again' : 'dont';
   const vet = checks.find(c => c.id === 'vet');
   const cmd = checks.find(c => c.id === 'command');
-  if (vet.status === 'bad' || cmd?.exact) id = 'dont';
+  const say = checks.find(c => c.id === 'say');
+  const yell = checks.find(c => c.id === 'yell');
+  if (vet.status === 'bad' || say.status === 'bad' || cmd?.exact) id = 'dont';
+  // Great has to be earned: no notes at all, and one of the easiest shapes of name to shout.
+  const clean = checks.every(c => RANK[c.status] <= RANK.good);
+  const shouty = species === 'fish' || species === 'reptile' || yell.strength >= 2.75;
+  if (id === 'great' && !(clean && shouty)) id = 'good';
   const order = [...checks].sort((a, b) => RANK[b.status] - RANK[a.status]);
   const worst = order[0];
   const first = c => c.text.split(/(?<=[.?!])\s/)[0];
   let line;
-  if (RANK[worst.status] <= RANK.good) line = 'Passes every test.';
-  else if (id === 'great') line = 'Passes every test, with one small note.';
+  if (id === 'great') line = 'Passes every test, and it’s easy to shout.';
+  else if (RANK[worst.status] <= RANK.good) line = 'No problems, but it doesn’t carry as well as the easiest names to shout.';
   else line = first(worst);
   const nick = nicknames(name);
   return {

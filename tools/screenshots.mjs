@@ -80,8 +80,8 @@ const scrollTo = (page, sel, pad = 64) => page.evaluate(([s, p]) => window.scrol
     .map((name, i) => ({ name, species: name === 'Hoof Hearted' ? 'horse' : i % 2 ? 'cat' : 'dog', at: i }));
   const page = await open({ width: 1280, height: 800 }, 1, { saved, house: 'Luna', surname: 'Farrell' });
   await page.goto(base + '#/check');
-  await page.fill('#nameInput', 'Gerald');
-  await page.waitForFunction(() => document.querySelector('#report .stamp'), null, { polling: 100 });
+  await page.fill('#nameInput', 'Pesto');
+  await page.waitForFunction(() => document.querySelector('#report .stamp')?.textContent === 'Great name', null, { polling: 100 });
   await page.waitForTimeout(300);
   await save(await page.screenshot(), 'docs/desktop-check.png');
   await page.context().close();
@@ -93,7 +93,7 @@ const scrollTo = (page, sel, pad = 64) => page.evaluate(([s, p]) => window.scrol
   await page.evaluate(async () => {
     const { tagSVG } = await import('./js/tag.js');
     const { check } = await import('./js/check.js');
-    const tags = [['Pickles', 'dog', 92], ['Gerald', 'cat', 170], ['Hoof Hearted', 'horse', 60]].map(([name, species, top]) => {
+    const tags = [['Dobby', 'dog', 92], ['Gerald', 'cat', 170], ['Hoof Hearted', 'horse', 60]].map(([name, species, top]) => {
       const v = check(name, { species }).verdict;
       return `<div class="hang big og" style="margin-top:${top}px">${tagSVG(name, { species })}<span class="stamp s-${v.id}">${v.stamp}</span></div>`;
     }).join('');

@@ -2,10 +2,10 @@
 // Your shortlist and picks live in localStorage, not here.
 // Network first, so a new version shows up as soon as you're online.
 
-const CACHE = 'name-tag-v2'; // bump the number when the file list changes
+const CACHE = 'name-tag-v3'; // bump the number when the file list changes
 const SHELL = [
   './', 'index.html', 'icon.svg', 'icon-180.png', 'manifest.webmanifest', 'css/app.css',
-  'js/app.js', 'js/names.js', 'js/sound.js', 'js/check.js', 'js/generate.js', 'js/tag.js', 'js/store.js', 'js/voice.js',
+  'js/app.js', 'js/names.js', 'js/sound.js', 'js/check.js', 'js/generate.js', 'js/tag.js', 'js/store.js', 'js/voice.js', 'js/sayable.js',
   'fonts/bricolage.woff2', 'fonts/figtree.woff2',
 ];
 

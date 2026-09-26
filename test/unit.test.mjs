@@ -56,7 +56,7 @@ test('clashes at home', () => {
 test('the waiting-room test', () => {
   assert.equal(verdict('Hoof Hearted', { species: 'horse' }), 'dont');
   assert.equal(verdict('Ben', { surname: 'Dover' }), 'dont');
-  assert.equal(verdict('Ben', { surname: 'Farrell' }), 'great');
+  assert.ok(['great', 'good'].includes(verdict('Ben', { surname: 'Farrell' })));
   assert.equal(verdict('Fire'), 'dont');
   assert.match(check('Butterscotch').checks.find(c => c.id === 'vet').text, /Butt/);
   assert.match(check('Dickens').checks.find(c => c.id === 'vet').text, /Dick/);
@@ -124,4 +124,31 @@ test('the least robotic voice wins', async () => {
   assert.equal(pickVoice(mac, 'Daniel').name, 'Daniel');
   assert.equal(pickVoice(mac, 'Gone Now').name, 'Ava (Premium)');
   assert.equal(pickVoice([v('Thomas', 'fr-FR')]), null);
+});
+
+test('nonsense gets told off, unusual but sayable names do not', () => {
+  for (const g of ['asdfgh', 'qwerty', 'xqzvbrt', 'jkjkjk', 'fjdksla', 'zzzzz', 'bnmvcx', 'hjkl', 'aaaaaa', 'asdkfjasd', 'qpwoeiru', 'lkjhg']) {
+    assert.equal(verdict(g), 'dont', g);
+    assert.equal(status(g, 'say'), 'bad', g);
+  }
+  for (const n of ['Blorfnax', 'Zorblax', 'Wumbo', 'Flibbert', 'Brixley', 'Zephyr', 'Rhys', 'Dmitri', 'Ngozi', 'Kinsley', 'Everly']) {
+    assert.ok(['good', 'ok'].includes(status(n, 'say')), n);
+    assert.notEqual(verdict(n), 'dont', n);
+  }
+  for (const n of ['Xochitl', 'Aoife']) assert.equal(status(n, 'say'), 'warn', n);
+  assert.equal(status('Luna', 'say'), 'good');
+});
+
+test('great has to be earned', () => {
+  const tally = { great: 0, total: 0 };
+  for (const e of NAMES) {
+    if (e.only.length && !e.only.includes('dog')) continue;
+    tally.total++;
+    if (verdict(e.name, { species: 'dog' }) === 'great') tally.great++;
+  }
+  const share = tally.great / tally.total;
+  assert.ok(share > 0.15 && share < 0.35, `great for ${Math.round(share * 100)}% of the list`);
+  assert.equal(verdict('Nacho'), 'great');
+  assert.equal(verdict('Luna'), 'good');
+  assert.equal(verdict('Meatball'), 'good');
 });
