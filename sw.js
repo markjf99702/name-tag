@@ -1,6 +1,7 @@
 // Offline support: keep a copy of the app so it works with no signal.
 // Your shortlist and picks live in localStorage, not here.
-// Network first, so a new version shows up as soon as you're online.
+// Network first, so a new version shows up as soon as you're online. GitHub Pages lets browsers keep files for
+// ten minutes, so scripts and styles are re-checked with the server every time instead of taken from that cache.
 
 const CACHE = 'name-tag-v2'; // bump the number when the file list changes
 const SHELL = [
@@ -22,8 +23,9 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
+  const fresh = e.request.mode === 'navigate' ? fetch(e.request) : fetch(e.request, { cache: 'no-cache' });
   e.respondWith(
-    fetch(e.request)
+    fresh
       .then(res => {
         if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); }
         return res;

@@ -44,7 +44,11 @@ await page.addInitScript(() => {
   ];
   window.spoken = [];
   window.SpeechSynthesisUtterance = function (text) { this.text = text; this.rate = 1; this.pitch = 1; };
-  const synth = { getVoices: () => voices, speak: u => window.spoken.push({ text: u.text, voice: u.voice?.name, rate: u.rate, pitch: u.pitch }), cancel() {}, addEventListener() {} };
+  // Like Chrome: the list is empty at first and fills in later, with a voiceschanged event.
+  let ready = false;
+  const heard = [];
+  window.voicesArrive = () => { ready = true; heard.forEach(f => f()); };
+  const synth = { getVoices: () => (ready ? voices : []), speak: u => window.spoken.push({ text: u.text, voice: u.voice?.name, rate: u.rate, pitch: u.pitch }), cancel() {}, addEventListener: (type, f) => { if (type === 'voiceschanged') heard.push(f); } };
   Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
 });
 await page.goto(base);
@@ -88,6 +92,9 @@ await page.waitForFunction(() => document.querySelector('#report .verdict')?.tex
 assert.equal(await page.textContent('#report .stamp'), 'It’ll do');
 
 // Calling it uses the most natural voice at a normal pitch; the menu offers the English voices and remembers a pick.
+assert.equal(await page.locator('#voicePick').count(), 0, 'a voice menu with no voices');
+await page.evaluate(() => window.voicesArrive());
+await page.waitForSelector('#voicePick', { timeout: 3000 });
 await page.click('#callBtn');
 assert.deepEqual(await page.evaluate(() => window.spoken.pop()), { text: 'Bo! Bo, come here!', voice: 'Ava (Premium)', rate: 1, pitch: 1 });
 assert.deepEqual(await page.locator('#voicePick option').allTextContents(), ['Samantha', 'Ava (Premium)', 'Daniel']);

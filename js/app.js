@@ -262,12 +262,15 @@ function loadVoices() {
   try { voices = speechSynthesis.getVoices(); } catch { voices = []; }
 }
 if ('speechSynthesis' in window) {
-  loadVoices();
-  speechSynthesis.addEventListener?.('voiceschanged', () => {
+  const refresh = () => {
     const had = englishVoices(voices).length;
     loadVoices();
     if (englishVoices(voices).length !== had && !$('#page-check').hidden) renderReport();
-  });
+  };
+  loadVoices();
+  // Chrome fills the list a moment after the page loads, and doesn't always announce it.
+  speechSynthesis.addEventListener?.('voiceschanged', refresh);
+  for (const ms of [250, 1000, 2500, 5000]) setTimeout(refresh, ms);
 }
 
 function voiceMenu() {
