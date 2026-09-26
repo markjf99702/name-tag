@@ -110,3 +110,18 @@ test('dealing follows the picks', () => {
   assert.ok(ginger.picks.filter(p => p.entry.coats.includes('ginger')).length >= 5);
   assert.deepEqual(deal({}, { random: seeded(9) }).picks.map(p => p.name), deal({}, { random: seeded(9) }).picks.map(p => p.name));
 });
+
+test('the least robotic voice wins', async () => {
+  const { pickVoice, englishVoices } = await import('../js/voice.js');
+  const v = (name, lang = 'en-US', extra = {}) => ({ name, lang, ...extra });
+  const mac = [v('Albert'), v('Bubbles'), v('Zarvox'), v('Fred'), v('Samantha', 'en-US', { default: true }), v('Daniel', 'en-GB'), v('Ava (Premium)'), v('Amélie', 'fr-CA')];
+  assert.equal(pickVoice(mac).name, 'Ava (Premium)');
+  assert.ok(!englishVoices(mac).some(x => /Albert|Bubbles|Zarvox|Fred|Amélie/.test(x.name)));
+  const chrome = [v('Microsoft David - English (United States)'), v('Google US English'), v('Google Deutsch', 'de-DE')];
+  assert.equal(pickVoice(chrome).name, 'Google US English');
+  const edge = [v('Microsoft Zira - English (United States)'), v('Microsoft Aria Online (Natural) - English (United States)')];
+  assert.match(pickVoice(edge).name, /Aria/);
+  assert.equal(pickVoice(mac, 'Daniel').name, 'Daniel');
+  assert.equal(pickVoice(mac, 'Gone Now').name, 'Ava (Premium)');
+  assert.equal(pickVoice([v('Thomas', 'fr-FR')]), null);
+});

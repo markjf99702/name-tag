@@ -5,6 +5,7 @@ import { check, alternatives, displayName } from './check.js';
 import { plain } from './sound.js';
 import { tagSVG } from './tag.js';
 import { load, save } from './store.js';
+import { englishVoices, pickVoice } from './voice.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -230,7 +231,7 @@ function renderReport() {
       </div>
       <div class="report-actions">
         <button type="button" class="btn heart big" data-save="${esc(r.name)}" data-species="${r.species}" aria-pressed="${saved}">${saved ? '♥ Saved' : '♡ Save to shortlist'}</button>
-        ${speech ? `<button type="button" class="btn" id="callBtn">Call it</button><button type="button" class="btn" id="troubleBtn">Tell it off</button>` : ''}
+        ${speech ? `<button type="button" class="btn" id="callBtn">Call it</button><button type="button" class="btn" id="troubleBtn">Tell it off</button>${voiceMenu()}` : ''}
       </div>
     </div>
     <div class="panel receipt">
@@ -249,19 +250,50 @@ function renderReport() {
     </div>` : ''}
   </div>`;
   if (speech) {
-    $('#callBtn').addEventListener('click', () => say(`${r.name}! ${r.name}! Come here!`, 1.05, 1.15));
-    $('#troubleBtn').addEventListener('click', () => say(`${r.trouble}!`, 0.82, 0.7));
+    $('#callBtn').addEventListener('click', () => say(`${r.name}! ${r.name}, come here!`));
+    // Commas slow it into a proper telling-off without bending the pitch, which is what makes these voices sound robotic.
+    $('#troubleBtn').addEventListener('click', () => say(`${r.trouble.split(' ').join(', ')}!`, 0.9));
   }
 }
 
-function say(text, rate, pitch) {
+// The browser's own voices: the best one on this device, or the one you picked.
+let voices = [];
+function loadVoices() {
+  try { voices = speechSynthesis.getVoices(); } catch { voices = []; }
+}
+if ('speechSynthesis' in window) {
+  loadVoices();
+  speechSynthesis.addEventListener?.('voiceschanged', () => {
+    const had = englishVoices(voices).length;
+    loadVoices();
+    if (englishVoices(voices).length !== had && !$('#page-check').hidden) renderReport();
+  });
+}
+
+function voiceMenu() {
+  const list = englishVoices(voices);
+  if (list.length < 2) return '';
+  const current = pickVoice(voices, state.voice);
+  return `<label class="voice">Voice <select id="voicePick">${list.map(v =>
+    `<option value="${esc(v.name)}"${v === current ? ' selected' : ''}>${esc(v.name.replace(/^(Microsoft|Google) /, ''))}</option>`).join('')}</select></label>`;
+}
+
+document.addEventListener('change', e => {
+  if (e.target.id !== 'voicePick') return;
+  state.voice = e.target.value;
+  persist();
+  say(`${displayName(input.value) || 'Good dog'}!`);
+});
+
+function say(text, rate = 1) {
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
+    const v = pickVoice(voices.length ? voices : speechSynthesis.getVoices(), state.voice);
+    if (v) { u.voice = v; u.lang = v.lang; }
     u.rate = rate;
-    u.pitch = pitch;
     speechSynthesis.speak(u);
-  } catch { /* no voices */ }
+  } catch { /* no voices here */ }
 }
 
 // ---------- Shortlist ----------

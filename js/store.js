@@ -2,7 +2,7 @@
 import { DEFAULT_CRITERIA } from './generate.js';
 
 const KEY = 'name-tag:v1';
-export const DEFAULTS = { ...DEFAULT_CRITERIA, house: '', surname: '', saved: [], last: '' };
+export const DEFAULTS = { ...DEFAULT_CRITERIA, house: '', surname: '', saved: [], last: '', voice: '' };
 
 export function load() {
   try {

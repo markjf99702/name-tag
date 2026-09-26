@@ -260,6 +260,15 @@ details > fieldset:first-of-type { margin-top: 8px; }
 .hang.big.swing .tag { animation: swing 1.6s cubic-bezier(.3, .6, .4, 1) both; }
 .report-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: min(100%, 320px); }
 .report-actions .heart { grid-column: 1 / -1; }
+.voice {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; padding-left: 16px;
+  background: var(--paper); border: 1.5px solid var(--line); border-radius: 999px;
+  font-weight: 700; font-size: .9rem; color: var(--muted);
+}
+.voice select {
+  flex: 1; min-width: 0; min-height: 42px; padding: 0 12px; border: 0; border-radius: 999px;
+  background: transparent; color: var(--ink); font: 700 .95rem var(--body);
+}
 .receipt { padding: 18px 18px 20px; position: relative; }
 .verdict { font-size: 1.1rem; padding-bottom: 12px; border-bottom: 1.5px dashed var(--line); }
 .verdict strong { font-family: var(--display); font-weight: 800; }

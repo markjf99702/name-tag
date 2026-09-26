@@ -28,7 +28,7 @@
   - **Easy to call:** syllables, an open ending that carries, a hard first sound that cuts through noise.
   - **Other names at home:** type in the other pets and people, and it catches rhymes (Molly and Polly), the same start (Bella and Benny) and near misses (Kit and Kat).
   - **How common, Say it, spell it, Fits on a tag,** and a note for the animal: Lily is a lovely cat name, and lilies are poisonous to cats.
-- **Then the extras:** what it'll get called (Reginald becomes Reggie), the full name for when it's in trouble, and similar names that pass, so you can try one of those instead. **Call it** and **Tell it off** say the name out loud, if your browser can speak.
+- **Then the extras:** what it'll get called (Reginald becomes Reggie), the full name for when it's in trouble, and similar names that pass, so you can try one of those instead. **Call it** and **Tell it off** say the name out loud with the most natural voice your device has, and the **Voice** menu lets you pick another. On an iPhone, the Enhanced and Premium voices you can download under Settings → Accessibility → Spoken Content → Voices sound far better than the default.
 - **Shortlist.** Save names from either side. Each one shows its stamp. **Pick one for me** draws one when you can't decide.
 - No account and no server. Your picks and shortlist stay in your browser. It works offline and installs to a phone's home screen.
 
@@ -56,6 +56,6 @@ To put it online with GitHub Pages: **Settings → Pages → Build and deploymen
 - `js/check.js`: the tests, the verdict, nicknames, the full name and the names to try instead.
 - `js/generate.js`: filters the list by your picks and deals names by how well they fit.
 - `js/tag.js`: draws a name engraved on a tag. Each name always gets the same metal and shape.
-- `js/app.js`: the page. `js/store.js` saves your picks and shortlist.
+- `js/app.js`: the page. `js/store.js` saves your picks and shortlist. `js/voice.js` picks the least robotic voice for reading names aloud.
 - `fonts/`: Bricolage Grotesque and Figtree, both under the SIL Open Font License, served from here so nothing loads from elsewhere.
 - `sw.js`: keeps a copy for using offline.

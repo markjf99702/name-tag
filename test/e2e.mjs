@@ -25,7 +25,7 @@ const base = `http://localhost:${server.address().port}/`;
 const sw = await readFile(join(root, 'sw.js'), 'utf8');
 const shell = [...sw.match(/const SHELL = \[([\s\S]*?)\];/)[1].matchAll(/'([^']+)'/g)].map(m => m[1]).filter(f => f !== './');
 for (const f of shell) await readFile(join(root, f));
-for (const f of ['app', 'names', 'sound', 'check', 'generate', 'tag', 'store']) assert.ok(shell.includes(`js/${f}.js`), `sw.js is missing js/${f}.js`);
+for (const f of ['app', 'names', 'sound', 'check', 'generate', 'tag', 'store', 'voice']) assert.ok(shell.includes(`js/${f}.js`), `sw.js is missing js/${f}.js`);
 
 const browser = await pw.chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true });
@@ -36,6 +36,17 @@ page.on('console', m => { if (m.type() === 'error') problems.push(m.text()); });
 page.on('requestfailed', r => problems.push('failed: ' + r.url()));
 page.on('request', r => { if (!r.url().startsWith(base)) problems.push('left the site: ' + r.url()); });
 
+// A stand-in for the browser's voices, so the test can see what would be said and by which voice.
+await page.addInitScript(() => {
+  const voices = [
+    { name: 'Albert', lang: 'en-US' }, { name: 'Samantha', lang: 'en-US', default: true },
+    { name: 'Ava (Premium)', lang: 'en-US' }, { name: 'Daniel', lang: 'en-GB' }, { name: 'Thomas', lang: 'fr-FR' },
+  ];
+  window.spoken = [];
+  window.SpeechSynthesisUtterance = function (text) { this.text = text; this.rate = 1; this.pitch = 1; };
+  const synth = { getVoices: () => voices, speak: u => window.spoken.push({ text: u.text, voice: u.voice?.name, rate: u.rate, pitch: u.pitch }), cancel() {}, addEventListener() {} };
+  Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
+});
 await page.goto(base);
 await page.evaluate(() => document.fonts.ready);
 
@@ -75,6 +86,16 @@ await page.click('[data-group="checkSpecies"] [data-v="dog"]');
 await page.fill('#nameInput', 'Bo');
 await page.waitForFunction(() => document.querySelector('#report .verdict')?.textContent.includes('Rhymes with “no”'), null, { polling: 100 });
 assert.equal(await page.textContent('#report .stamp'), 'It’ll do');
+
+// Calling it uses the most natural voice at a normal pitch; the menu offers the English voices and remembers a pick.
+await page.click('#callBtn');
+assert.deepEqual(await page.evaluate(() => window.spoken.pop()), { text: 'Bo! Bo, come here!', voice: 'Ava (Premium)', rate: 1, pitch: 1 });
+assert.deepEqual(await page.locator('#voicePick option').allTextContents(), ['Samantha', 'Ava (Premium)', 'Daniel']);
+await page.selectOption('#voicePick', 'Daniel');
+await page.click('#troubleBtn');
+const off = await page.evaluate(() => window.spoken.pop());
+assert.equal(off.voice, 'Daniel');
+assert.match(off.text, /^Bo, \w+!$/);
 
 // A clash at home.
 await page.click('#home summary');
