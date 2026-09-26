@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Name Tag</title>
+  <meta name="description" content="Find a name for a new pet from normal or odd criteria, like coat colour, snacks or someone at work, and check any name for the things that make it a bad one: command clashes, rhymes with the other pets, and what the vet will read out.">
+  <meta property="og:title" content="Name Tag">
+  <meta property="og:description" content="Find a name for a new pet, or find out what's wrong with the one you picked.">
+  <meta property="og:image" content="https://junkdrawer.works/name-tag/og.png">
+  <meta property="og:url" content="https://junkdrawer.works/name-tag/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#e8d9bd" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1f1b17" media="(prefers-color-scheme: dark)">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="preload" href="fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/figtree.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/app.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <a class="brand" href="#/find">
+      <img src="icon.svg" alt="" width="30" height="30">
+      <span>Name Tag</span>
+    </a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#/find" data-tab="find"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="5" y="4" width="11" height="15" rx="2" transform="rotate(-8 10.5 11.5)" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="5" width="11" height="15" rx="2" transform="rotate(8 14.5 12.5)" fill="var(--tab-fill)" stroke="currentColor" stroke-width="2"/></svg><span>Find</span></a>
+      <a href="#/check" data-tab="check"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 3.5 5 6.5v5c0 4.2 3 7.6 7 9 4-1.4 7-4.8 7-9v-5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m8.8 12.2 2.3 2.3 4.3-4.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Check</span></a>
+      <a href="#/list" data-tab="list"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span>Shortlist</span><b class="count" id="savedCount" hidden></b></a>
+    </nav>
+  </header>
+
+  <main id="app">
+    <section class="page" id="page-find" aria-labelledby="find-h" hidden>
+      <div class="find-layout">
+        <form class="panel criteria" id="criteria" autocomplete="off">
+          <h1 id="find-h">Find a name</h1>
+          <p class="lede">Pick what matters and leave the rest. There are about 1,700 names in here.</p>
+          <fieldset>
+            <legend>It’s a</legend>
+            <div class="chips" data-group="species"></div>
+          </fieldset>
+          <fieldset>
+            <legend>Boy or girl</legend>
+            <div class="chips seg" data-group="sex"></div>
+          </fieldset>
+          <fieldset>
+            <legend>Named after <span class="hint">pick any, or none for a bit of everything</span></legend>
+            <div class="chips" data-group="themes"></div>
+          </fieldset>
+          <fieldset>
+            <legend>How normal?</legend>
+            <div class="chips seg" data-group="normal"></div>
+          </fieldset>
+          <details id="more">
+            <summary>Looks, size and personality</summary>
+            <fieldset>
+              <legend>Coat</legend>
+              <div class="chips" data-group="coats"></div>
+            </fieldset>
+            <fieldset>
+              <legend>Size</legend>
+              <div class="chips" data-group="size"></div>
+            </fieldset>
+            <fieldset>
+              <legend>Personality</legend>
+              <div class="chips" data-group="traits"></div>
+            </fieldset>
+            <div class="row fields">
+              <label class="field letter">Starts with <input id="letter" maxlength="2" autocapitalize="characters" spellcheck="false"></label>
+              <label class="tick"><input type="checkbox" id="easy"> <span>Easy to call: up to three syllables, and nothing that sounds like a command</span></label>
+            </div>
+          </details>
+          <button class="btn primary big" id="dealBtn" type="button">Deal names</button>
+        </form>
+
+        <section class="results" id="results" aria-labelledby="results-h">
+          <div class="results-head">
+            <h2 id="results-h">Names</h2>
+            <button class="btn" id="againBtn" type="button">Deal again</button>
+          </div>
+          <div class="board" id="dealt" aria-live="polite"></div>
+        </section>
+      </div>
+    </section>
+
+    <section class="page" id="page-check" aria-labelledby="check-h" hidden>
+      <div class="check-layout">
+        <div class="panel engraver">
+          <h1 id="check-h">Check a name</h1>
+          <p class="lede">Type any name, even one you already gave a pet. It gets the tests a blunt friend would give it.</p>
+          <label class="engrave"><span class="sr-only">Name</span>
+            <input id="nameInput" placeholder="Type a name" maxlength="40" autocapitalize="words" autocomplete="off" spellcheck="false" enterkeyhint="done">
+          </label>
+          <div class="chips small" data-group="checkSpecies" aria-label="What kind of pet"></div>
+          <details id="home">
+            <summary>Your house <span class="hint">optional</span></summary>
+            <label class="field">Other pets and people at home <input id="house" placeholder="Luna, Mark, Jess" autocapitalize="words" spellcheck="false"></label>
+            <label class="field">Your last name, for the vet’s list <input id="surname" autocapitalize="words" spellcheck="false"></label>
+          </details>
+          <p class="try">Try <button type="button" data-try="Pickles">Pickles</button> <button type="button" data-try="Kit">Kit</button> <button type="button" data-try="Gerald">Gerald</button> <button type="button" data-try="Butterscotch">Butterscotch</button> <button type="button" data-try="Hoof Hearted">Hoof Hearted</button></p>
+        </div>
+        <div id="report" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-list" aria-labelledby="list-h" hidden>
+      <div class="panel list-head">
+        <h1 id="list-h">Shortlist</h1>
+        <p class="lede" id="listLede"></p>
+        <div class="row" id="listActions">
+          <button class="btn primary" id="pickBtn" type="button">Pick one for me</button>
+          <button class="btn" id="copyBtn" type="button">Copy the list</button>
+        </div>
+      </div>
+      <div class="board" id="saved"></div>
+    </section>
+  </main>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <noscript><p class="noscript">Name Tag needs JavaScript to deal names and check them.</p></noscript>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "name-tag",
+  "private": true,
+  "type": "module",
+  "description": "Find a name for a new pet, or find out what's wrong with the one you picked.",
+  "scripts": {
+    "start": "npx --yes http-server -c-1 -p 8080 .",
+    "test": "node --test test/unit.test.mjs && node test/e2e.mjs",
+    "build": "node scripts/build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "upng-js": "^2.1.0"
+  }
+}

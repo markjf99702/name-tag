@@ -1,0 +1,16 @@
+{
+  "name": "Name Tag",
+  "short_name": "Name Tag",
+  "description": "Find a name for a new pet, or find out what's wrong with the one you picked.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e8d9bd",
+  "theme_color": "#e8d9bd",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
