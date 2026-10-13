@@ -205,6 +205,13 @@ const rolls = values => page.evaluate(v => { const real = Math.random; Math.rand
 await rolls([0.1, 0.9]);
 await page.click('#pickBtn');
 await page.click('#pickBtn');
+// The highlight lifts and tilts each tag as it passes (looking only at tags that have finished swinging in).
+const lifted = () => {
+  const lit = document.querySelector('#saved .hang.lit');
+  if (!lit || lit.querySelector('.tag').getAnimations().some(a => a.playState === 'running')) return false;
+  return [lit.querySelector('.tag'), lit.querySelector('.tagbtn')].some(el => !['none', 'matrix(1, 0, 0, 1, 0, 0)'].includes(getComputedStyle(el).transform));
+};
+assert.ok(await page.waitForFunction(lifted, null, { timeout: 3000 }).catch(() => false), 'the highlighted tag isn’t lifted');
 await page.waitForSelector('#saved .hang.picked', { timeout: 8000 });
 await page.waitForTimeout(800);
 assert.deepEqual(await page.locator('#saved .hang.picked .tagbtn').evaluateAll(els => els.map(e => e.dataset.check)), ['Pickles'], 'two draws at once');

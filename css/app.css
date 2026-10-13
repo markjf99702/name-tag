@@ -316,7 +316,9 @@ details > fieldset:first-of-type { margin-top: 8px; }
 /* ---------- Shortlist ---------- */
 .list-head { margin-bottom: 26px; }
 .list-head .row { margin-top: 14px; }
-.hang.lit .tag { transform: translateY(-4px) rotate(2deg); filter: var(--tag-shadow) brightness(1.15); }
+/* The lift goes on the button, since the tag's own transform is held by its swing-in. */
+.hang.lit .tagbtn { transform: translateY(-4px) rotate(2deg); }
+.hang.lit .tag { filter: var(--tag-shadow) brightness(1.15); }
 .hang.picked .tag { animation: pick 1s cubic-bezier(.3, .6, .4, 1) both; }
 .hang.picked::after {
   content: ''; position: absolute; inset: -6px -4px auto; height: calc(100% - 50px); z-index: -1;
