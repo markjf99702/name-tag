@@ -12,6 +12,8 @@ const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const cap = s => s[0].toUpperCase() + s.slice(1);
 const narrow = () => matchMedia('(max-width: 959px)').matches;
+// Scrolling glides, unless the device asks for less motion.
+const glide = () => (matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
 const state = load();
 const persist = () => save(state);
 
@@ -108,7 +110,7 @@ function hangCard(name, species, { i = 0, why = '', stamp = null, removable = fa
 
 $('#dealBtn').addEventListener('click', () => {
   dealNow();
-  if (narrow()) $('#results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (narrow()) $('#results').scrollIntoView({ behavior: glide(), block: 'start' });
 });
 $('#againBtn').addEventListener('click', dealNow);
 
@@ -185,7 +187,7 @@ input.addEventListener('input', () => {
   clearTimeout(typing);
   typing = setTimeout(renderReport, 140);
 });
-const showReport = () => { if (narrow()) $('#report').scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+const showReport = () => { if (narrow()) $('#report').scrollIntoView({ behavior: glide(), block: 'start' }); };
 input.addEventListener('keydown', e => { if (e.key === 'Enter') { input.blur(); renderReport(); showReport(); } });
 for (const [el, key] of [[house, 'house'], [surname, 'surname']]) {
   let wait;
@@ -348,7 +350,7 @@ $('#pickBtn').addEventListener('click', () => {
     if (n >= steps) {
       drawing = null;
       cards[winner].classList.add('picked');
-      cards[winner].scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+      cards[winner].scrollIntoView({ behavior: glide(), block: 'center' });
       toast(`It’s ${name}.`);
       return;
     }

@@ -80,6 +80,13 @@ await firstTag.hover();
 await page.waitForTimeout(800);
 await page.mouse.move(1, 1);
 assert.ok(await swungIn(firstTag), 'the tag swung in again after the pointer left it');
+
+// With reduced motion on, Deal names jumps straight down to the names instead of gliding there.
+await page.emulateMedia({ reducedMotion: 'reduce' });
+await page.evaluate(() => window.scrollTo(0, 0));
+const jumped = await page.evaluate(() => { document.querySelector('#dealBtn').click(); return scrollY; });
+await page.emulateMedia({ reducedMotion: null });
+assert.ok(jumped > 300, `Deal names glided with reduced motion on (at ${jumped} straight after the tap)`);
 await page.click('[data-group="species"] [data-v="cat"]');
 await page.click('[data-group="themes"] [data-v="puns"]');
 const puns = await page.locator('#dealt .tagbtn').evaluateAll(els => els.map(e => e.dataset.check));
