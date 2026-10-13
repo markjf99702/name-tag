@@ -116,6 +116,8 @@ test('a long name gets cut down to a real short form, never the joke one', () =>
   const yell = n => check(n).checks.find(c => c.id === 'yell').text;
   assert.match(yell('Penelope'), /turn into Penny\./);
   assert.match(yell('Pawl McCartney'), /turn into Pawl\./);
+  assert.match(yell('Dolly Parton'), /turn into Dolly\./);
+  assert.match(yell('Nibbles McGee'), /turn into Nibbles\./);
   assert.match(yell('Pistachio'), /turn into something shorter\./);
   for (const e of NAMES) assert.doesNotMatch(yell(e.name), /-(bean|bug|pants|face|nugget|muffin)\b/, e.name);
 });

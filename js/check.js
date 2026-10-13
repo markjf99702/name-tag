@@ -179,7 +179,11 @@ export function nicknames(name) {
   const shown = out.filter(n => { const k = plain(n); if (seen.has(k) || k.length < 2 || rude(k)) return false; seen.add(k); return true; }).slice(0, 3);
   stems.push(...out.map(plain).filter(rude));
   // What a long name will really be cut down to, for the Easy to call note. Never the joke one: that's longer.
-  const short = shown.find(n => shorter.includes(n)) || (w.length > 1 ? cap(w[0]) : '');
+  // A name of two or more words loses the rest (Dolly Parton turns into Dolly, not Dol), unless the first word has a
+  // usual short form of its own.
+  const short = w.length > 1
+    ? (SHORT[first] || []).find(n => shown.includes(n)) || cap(first)
+    : shown.find(n => shorter.includes(n)) || '';
   return { shown, stems, short };
 }
 
