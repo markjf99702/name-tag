@@ -269,6 +269,16 @@ assert.equal(await page.locator('#dealt .hang').count(), 6, 'no names offline');
 signal(true);
 
 assert.deepEqual(problems, [], 'problems while using it');
+
+// Without JavaScript, the message sits in the page with the usual gutter, above the footer.
+const noScript = await browser.newContext({ viewport: { width: 390, height: 844 }, javaScriptEnabled: false });
+const plainPage = await noScript.newPage();
+await plainPage.goto(base);
+const message = await plainPage.locator('.noscript').boundingBox();
+const footer = await plainPage.locator('.jd-foot').boundingBox();
+assert.ok(message.x >= 16 && message.x + message.width <= 390 - 16 && message.y < footer.y, `the no-JavaScript message is at ${JSON.stringify(message)}`);
+await noScript.close();
+
 await browser.close();
 server.close();
 console.log('all good');
