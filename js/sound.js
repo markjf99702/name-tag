@@ -33,6 +33,10 @@ const SYLLABLES = {
   louise: 2, eunice: 2, maurice: 2, clarice: 2, beatrice: 3, janice: 2, candice: 2, bernice: 2, alice: 2, grace: 1,
   eugene: 2, irene: 2, nadine: 2, maxine: 2, pauline: 2, jolene: 2, arlene: 2, darlene: 2, ebenezer: 4, lucifer: 3,
   sequoia: 3, yosemite: 4, europa: 3, galileo: 4, ganymede: 3, nebula: 3, gnocchi: 2, espresso: 3, gouda: 2, brie: 1,
+  louie: 2, bluey: 2, maui: 2, agnes: 2, dolores: 3, archimedes: 4, leonard: 2, geoff: 1, seoul: 1, georgia: 2,
+  georgiana: 4, sienna: 3, sierra: 3, vienna: 3, harriet: 3, muriel: 3, henrietta: 4, thaddeus: 3, marcia: 2,
+  prometheus: 4, odysseus: 4, cheesecake: 2, rosemary: 3, lovelace: 2, gooseberry: 3, takeout: 2, cocoa: 2, ochre: 2,
+  haydn: 2, boise: 2, oahu: 3, quixote: 3, pliers: 2,
 };
 
 // Syllables in one word of letters.
@@ -52,15 +56,17 @@ function wordSyllables(w) {
   });
   s = s.replace(/^y(?=[aeiou])/, '');                            // Yoda, Yuri
   s = s.replace(/([aeiou])y(?=[aeiou])/g, '$1-');                 // Maya, Freya: the y is a consonant
-  const groups = s.match(/[aeiouy]+/g) || [];
   let n = 0;
-  for (const g of groups) {
+  for (const { 0: found, index } of s.matchAll(/[aeiouy]+/g)) {
+    // After q or g, a u before another vowel is part of the consonant: Quark, Squash, Guava.
+    const g = /[qg]/.test(s[index - 1] || '') && /^u./.test(found) ? found.slice(1) : found;
     n += 1;
     // Vowel pairs that are usually said as two beats: Leo, Mia, Rio, Joshua, Sirius, Goa.
     n += (g.match(/eo|ia|io|iu|ua(?!$)|uo|ii/g) || []).length;
-    if (/ua$/.test(g) && !/[qg]ua$/.test(s)) n += 1;
+    if (/ua$/.test(g)) n += 1;
   }
   if (/[^aeiou]oa$/.test(s)) n += 1;
+  if (/^mc[^aeiouy]/.test(w)) n += 1;                           // McGee: Mc is said "mac"
   return Math.max(1, n);
 }
 
@@ -79,7 +85,7 @@ export function phonetic(word) {
   if (!w) return '';
   const oneBeat = wordSyllables(w) === 1;
   w = w.replace(/^kn/, 'n').replace(/^gn/, 'n').replace(/^pn/, 'n').replace(/^ps/, 's').replace(/^wr/, 'r')
-    .replace(/^wh/, 'w').replace(/^mn/, 'n').replace(/^pt/, 't').replace(/^x/, 'z');
+    .replace(/^wh/, 'w').replace(/^mn/, 'n').replace(/^pt/, 't').replace(/^x/, 'z').replace(/^geoff/, 'jeff');
   w = w.replace(/lle$/, 'l');
   // Long vowels made by a silent final e: Kate, Steve, Mike, Rose, Duke.
   w = w.replace(/(^|[^aeiou])([aeiou])([^aeiouy])e(s?)$/, (m, b, v, c, s) => `${b}${{ a: '1', e: '2', i: '3', o: '4', u: '5' }[v]}${c}${s}`);

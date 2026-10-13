@@ -23,7 +23,8 @@ test('every popular name is in the list', () => {
 });
 
 test('syllables', () => {
-  const want = { Max: 1, Luna: 2, Pickles: 2, Charles: 1, James: 1, Leo: 2, Maya: 2, Duke: 1, Zoe: 2, Penelope: 4, Juniper: 3, 'Tater Tot': 3, 'Sir Hiss': 1, Bartholomew: 4, Belle: 1, Maple: 2 };
+  const want = { Max: 1, Luna: 2, Pickles: 2, Charles: 1, James: 1, Leo: 2, Maya: 2, Duke: 1, Zoe: 2, Penelope: 4, Juniper: 3, 'Tater Tot': 3, 'Sir Hiss': 1, Bartholomew: 4, Belle: 1, Maple: 2,
+    Georgia: 2, Sienna: 3, Agnes: 2, Louie: 2, Leonard: 2, Cocoa: 2, Rosemary: 3, Quark: 1, Squash: 1, Guava: 2, Turquoise: 2, Joshua: 3, Fergus: 2, 'Nibbles McGee': 4 };
   for (const [n, s] of Object.entries(want)) assert.equal(syllables(n), s, n);
 });
 
@@ -39,6 +40,7 @@ test('names that sound like commands', () => {
   assert.equal(status('Kit', 'command'), 'warn');
   assert.equal(status('Kay', 'command'), 'warn');
   assert.equal(status('Max', 'command'), 'good');
+  assert.equal(status('Geoff', 'command'), 'good');
   assert.equal(verdict('Sit'), 'dont');
   assert.equal(status('Jack', 'command', { species: 'horse' }), 'warn');
   assert.equal(check('Bo', { species: 'cat' }).checks.find(c => c.id === 'command'), undefined);
