@@ -14,6 +14,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.json': 'application/json' };
 const server = createServer(async (req, res) => {
   const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  // A stand-in for another junkdrawer.works tool on the same address, which never starts Name Tag's worker.
+  if (path === '/another-tool/') { res.writeHead(200, { 'content-type': 'text/html' }); res.end('<!doctype html><title>Another tool</title>'); return; }
   let body;
   try { body = await readFile(join(root, path === '/' ? 'index.html' : path)); } catch { res.writeHead(404); res.end(); return; }
   res.writeHead(200, { 'content-type': TYPES[extname(path)] || 'text/html' });
@@ -51,6 +53,11 @@ await page.addInitScript(() => {
   const synth = { getVoices: () => (ready ? voices : []), speak: u => window.spoken.push({ text: u.text, voice: u.voice?.name, rate: u.rate, pitch: u.pitch }), cancel() {}, addEventListener: (type, f) => { if (type === 'voiceschanged') heard.push(f); } };
   Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
 });
+
+// Every tool at junkdrawer.works/… shares one address, and so one cache storage. Another tool's offline copy,
+// made before Name Tag's worker starts, has to survive it (checked once the worker is in charge, near the end).
+await page.goto(base + 'another-tool/');
+await page.evaluate(() => caches.open('another-tool-v1').then(c => c.put('index.html', new Response('another tool'))));
 await page.goto(base);
 await page.evaluate(() => document.fonts.ready);
 
@@ -142,8 +149,9 @@ for (const tab of ['find', 'check', 'list']) {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `the ${tab} page scrolls sideways on a phone`);
 }
 
-// Works offline once it has been opened.
-await page.waitForFunction(() => navigator.serviceWorker?.controller, null, { timeout: 10000 }).catch(() => {});
+// Leaves other tools' offline copies alone, and works offline once it has been opened.
+await page.waitForFunction(() => navigator.serviceWorker?.controller, null, { timeout: 10000 });
+assert.ok(await page.evaluate(() => caches.has('another-tool-v1')), 'the service worker deleted another tool’s offline copy');
 await ctx.setOffline(true);
 await page.reload();
 await page.waitForSelector('#page-list:not([hidden]) #saved .hang', { timeout: 5000 });

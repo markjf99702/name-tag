@@ -2,7 +2,7 @@
 // Your shortlist and picks live in localStorage, not here.
 // Network first, so a new version shows up as soon as you're online.
 
-const CACHE = 'name-tag-v3'; // bump the number when the file list changes
+const CACHE = 'name-tag-v4'; // bump the number when the file list changes
 const SHELL = [
   './', 'index.html', 'icon.svg', 'icon-180.png', 'manifest.webmanifest', 'css/app.css',
   'js/app.js', 'js/names.js', 'js/sound.js', 'js/check.js', 'js/generate.js', 'js/tag.js', 'js/store.js', 'js/voice.js', 'js/sayable.js',
@@ -13,9 +13,10 @@ self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
 
+// Every tool at junkdrawer.works/… shares this address, and so this cache storage: only clear out Name Tag's old copies.
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys()
-    .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+    .then(keys => Promise.all(keys.filter(k => k.startsWith('name-tag-') && k !== CACHE).map(k => caches.delete(k))))
     .then(() => self.clients.claim()));
 });
 
