@@ -93,6 +93,13 @@ test('odds and ends', () => {
   for (const a of alts) assert.ok(['great', 'good'].includes(verdict(a)), a);
 });
 
+test('nicknames only drop a plural s', () => {
+  assert.equal(nicknames('Pickles').shown[0], 'Pickle');
+  assert.equal(nicknames('Mittens').shown[0], 'Mitten');
+  assert.equal(nicknames('Peaches').shown[0], 'Peach');
+  for (const n of ['Venus', 'Atlas', 'Miles', 'Charles', 'Athens']) assert.ok(!nicknames(n).shown.includes(n.slice(0, -1)), n);
+});
+
 test('dealing follows the picks', () => {
   const r = seeded(3);
   for (let i = 0; i < 20; i++) {

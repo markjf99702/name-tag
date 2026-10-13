@@ -140,6 +140,15 @@ function diminutive(st) {
   return st + 'y';
 }
 
+// Pickles -> Pickle, Mittens -> Mitten, Peaches -> Peach. Venus, Atlas, Miles and Hades aren't plurals, so they keep it.
+const NOT_PLURAL = new Set(['athens', 'brahms']);
+function singular(word) {
+  if (word.length < 5 || NOT_PLURAL.has(word)) return '';
+  if (/(ch|sh)es$/.test(word)) return word.slice(0, -2);
+  if (/[^aeiouyrl]les$/.test(word) || /[^aeiouys]s$/.test(word)) return word.slice(0, -1);
+  return '';
+}
+
 // What it'll turn into, and any short form that's a problem.
 export function nicknames(name) {
   const w = callWords(name);
@@ -148,7 +157,7 @@ export function nicknames(name) {
   const stems = [];
   const s = soundOf(name);
   if (SHORT[first]) out.push(...SHORT[first]);
-  if (w.length === 1 && /[^s]s$/.test(first) && first.length >= 5 && !SHORT[first]) out.push(cap(first.slice(0, -1)));
+  if (w.length === 1 && !SHORT[first] && singular(first)) out.push(cap(singular(first)));
   if (first.length >= 4 && s.syllables >= 2) {
     const st = stem(first);
     // Only a closed first syllable (Butt-erscotch, Dick-ens) is likely to be said the way it's spelled.
