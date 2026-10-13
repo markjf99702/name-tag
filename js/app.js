@@ -173,7 +173,7 @@ function openCheck(name) {
   state.last = name;
   persist();
   // From another page, route() draws the report once Check is showing, so the tag swings in and the stamp thumps.
-  if (pageNow() === 'check') renderReport();
+  if (pageNow() === 'check') { renderReport(); focusHeading(); }
   else location.hash = '#/check';
   window.scrollTo({ top: 0 });
 }
@@ -389,6 +389,12 @@ function pageNow() {
   return ['find', 'check', 'list'].includes(page) ? page : 'find';
 }
 
+// On a page change the focus moves to the new page's heading, so a keyboard or a screen reader isn't left on a
+// button that's gone. Not the name box: that would pop up the keyboard on a phone every time a tag was tapped.
+function focusHeading() {
+  $(`#page-${pageNow()} h1`).focus({ preventScroll: true });
+}
+
 function route() {
   const current = pageNow();
   for (const p of $$('.page')) p.hidden = p.id !== `page-${current}`;
@@ -409,6 +415,7 @@ document.addEventListener('click', e => {
 });
 window.addEventListener('hashchange', () => {
   route();
+  focusHeading();
   if (fromLink) window.scrollTo({ top: 0 });
   fromLink = false;
 });

@@ -128,6 +128,15 @@ assert.ok(spot > 300 && Math.abs(await page.evaluate(() => scrollY) - spot) < 5,
 await page.goForward();
 await page.waitForSelector('#page-check:not([hidden]) #report .receipt');
 
+// With a keyboard, Enter on a tag opens Check with the focus on its heading, so the next Tab goes to the name box.
+await page.click('.tabs a[data-tab="find"]');
+await page.locator('#dealt .tagbtn').nth(2).focus();
+await page.keyboard.press('Enter');
+await page.waitForSelector('#page-check:not([hidden])');
+assert.equal(await page.evaluate(() => document.activeElement.id), 'check-h', 'the focus was lost on the way to Check');
+await page.keyboard.press('Tab');
+assert.equal(await page.evaluate(() => document.activeElement.id), 'nameInput');
+
 // Check: a name that sounds like a command, for a dog.
 await page.click('[data-group="checkSpecies"] [data-v="dog"]');
 await page.fill('#nameInput', 'Bo');
