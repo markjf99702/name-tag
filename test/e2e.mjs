@@ -64,6 +64,15 @@ await page.evaluate(() => document.fonts.ready);
 // Find: six names are dealt straight away, and picks change them.
 await page.waitForSelector('#dealt .hang');
 assert.equal(await page.locator('#dealt .hang').count(), 6);
+
+// With a mouse, moving off a tag leaves it hanging there: it doesn't blink out and swing in again.
+const swungIn = tag => tag.evaluate(t => t.getAnimations().every(a => a.playState === 'finished'));
+const firstTag = page.locator('#dealt .tag').first();
+await page.waitForFunction(() => [...document.querySelectorAll('#dealt .tag')].every(t => t.getAnimations().every(a => a.playState === 'finished')));
+await firstTag.hover();
+await page.waitForTimeout(800);
+await page.mouse.move(1, 1);
+assert.ok(await swungIn(firstTag), 'the tag swung in again after the pointer left it');
 await page.click('[data-group="species"] [data-v="cat"]');
 await page.click('[data-group="themes"] [data-v="puns"]');
 const puns = await page.locator('#dealt .tagbtn').evaluateAll(els => els.map(e => e.dataset.check));
