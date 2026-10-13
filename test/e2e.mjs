@@ -137,6 +137,7 @@ await page.waitForSelector('#page-check:not([hidden]) #report .receipt');
 
 // With a keyboard, Enter on a tag opens Check with the focus on its heading, so the next Tab goes to the name box.
 await page.click('.tabs a[data-tab="find"]');
+await page.waitForFunction(() => document.activeElement?.id === 'find-h'); // the tab's own page change is done
 await page.locator('#dealt .tagbtn').nth(2).focus();
 await page.keyboard.press('Enter');
 await page.waitForSelector('#page-check:not([hidden])');
