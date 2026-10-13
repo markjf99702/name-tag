@@ -320,7 +320,8 @@ details > fieldset:first-of-type { margin-top: 8px; }
 /* The lift goes on the button, since the tag's own transform is held by its swing-in. */
 .hang.lit .tagbtn { transform: translateY(-4px) rotate(2deg); }
 .hang.lit .tag { filter: var(--tag-shadow) brightness(1.15); }
-.hang.picked .tag { animation: pick 1s cubic-bezier(.3, .6, .4, 1) both; }
+/* As with the nudge, swing stays in the list so the tag doesn't swing in again when the next draw starts. */
+.hang.picked .tag { animation: swing 1.5s cubic-bezier(.3, .6, .4, 1) both, pick 1s cubic-bezier(.3, .6, .4, 1) both; animation-delay: calc(var(--i, 0) * 70ms), 0s; }
 .hang.picked::after {
   content: ''; position: absolute; inset: -6px -4px auto; height: calc(100% - 50px); z-index: -1;
   border-radius: 24px; background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 35%, transparent), transparent);

@@ -238,6 +238,7 @@ assert.equal(await page.textContent('#toast'), 'It’s Pickles.');
 await page.evaluate(() => { document.querySelector('#toast').textContent = ''; });
 await rolls([0.99]);
 await page.click('#pickBtn');
+assert.ok(await swungIn(page.locator('#saved .hang').nth(2).locator('.tag')), 'the last pick blinked out and swung in again when the next draw started');
 await page.click('.tabs a[data-tab="find"]');
 await page.waitForTimeout(4500);
 assert.equal(await page.textContent('#toast'), '', 'the draw carried on after leaving the shortlist');
