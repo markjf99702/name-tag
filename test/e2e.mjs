@@ -103,6 +103,7 @@ await page.locator('#dealt .tagbtn').nth(1).click();
 await page.waitForSelector('#page-check:not([hidden])');
 assert.ok((await page.inputValue('#nameInput')).length > 0);
 await page.waitForSelector('#report .receipt');
+assert.equal(await page.locator('#report .hang.big.swing .stamp.thump').count(), 1, 'the tag didn’t swing in, or the stamp didn’t thump');
 await page.goBack();
 await page.waitForSelector('#page-find:not([hidden])');
 await page.waitForFunction(y => Math.abs(scrollY - y) < 5, spot, { timeout: 3000 }).catch(() => {});

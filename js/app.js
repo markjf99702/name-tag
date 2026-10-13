@@ -172,8 +172,9 @@ function openCheck(name) {
   input.value = name;
   state.last = name;
   persist();
-  location.hash = '#/check';
-  renderReport();
+  // From another page, route() draws the report once Check is showing, so the tag swings in and the stamp thumps.
+  if (pageNow() === 'check') renderReport();
+  else location.hash = '#/check';
   window.scrollTo({ top: 0 });
 }
 
@@ -383,9 +384,13 @@ function toast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
 }
 
-function route() {
+function pageNow() {
   const page = (location.hash.match(/^#\/(\w+)/) || [])[1];
-  const current = ['find', 'check', 'list'].includes(page) ? page : 'find';
+  return ['find', 'check', 'list'].includes(page) ? page : 'find';
+}
+
+function route() {
+  const current = pageNow();
   for (const p of $$('.page')) p.hidden = p.id !== `page-${current}`;
   for (const a of $$('.tabs a')) {
     if (a.dataset.tab === current) a.setAttribute('aria-current', 'page');
