@@ -158,12 +158,17 @@ export function nicknames(name) {
   const s = soundOf(name);
   if (SHORT[first]) out.push(...SHORT[first]);
   if (w.length === 1 && !SHORT[first] && singular(first)) out.push(cap(singular(first)));
+  const shorter = [...(SHORT[first] || [])];
   if (first.length >= 4 && s.syllables >= 2) {
     const st = stem(first);
     // Only a closed first syllable (Butt-erscotch, Dick-ens) is likely to be said the way it's spelled.
     if (/(ck|tt|ll|ss|ff|pp|mm|nn|rr|gg|zz|dd|bb|th|sh|ch)$/.test(st)) {
       stems.push(st);
-      if (s.syllables >= 3 && !SHORT[first]) out.push(cap(st.replace(/(.)\1$/, '$1')), cap(diminutive(st)));
+      if (s.syllables >= 3 && !SHORT[first]) {
+        const forms = [cap(st.replace(/(.)\1$/, '$1')), cap(diminutive(st))];
+        out.push(...forms);
+        shorter.push(...forms);
+      }
     }
   }
   const suffix = ['bean', 'bug', 'pants', 'face', 'nugget', 'muffin'][hash(first) % 6];
@@ -173,7 +178,9 @@ export function nicknames(name) {
   const rude = k => ['bad', 'warn'].includes(HEARD_BY_WORD.get(k)?.level);
   const shown = out.filter(n => { const k = plain(n); if (seen.has(k) || k.length < 2 || rude(k)) return false; seen.add(k); return true; }).slice(0, 3);
   stems.push(...out.map(plain).filter(rude));
-  return { shown, stems };
+  // What a long name will really be cut down to, for the Easy to call note. Never the joke one: that's longer.
+  const short = shown.find(n => shorter.includes(n)) || (w.length > 1 ? cap(w[0]) : '');
+  return { shown, stems, short };
 }
 
 const MIDDLES = ['Bartholomew', 'Montgomery', 'Fitzgerald', 'Archibald', 'Beatrice', 'Penelope', 'Wilhelmina', 'Genevieve',
@@ -217,7 +224,7 @@ function yellCheck(s, species, name) {
   if (open) score += 0.75;
   if (hard) score += 0.5;
   let status = score >= 2 ? 'good' : score >= 1 ? 'ok' : 'warn';
-  const short = nicknames(name).shown[0];
+  const short = nicknames(name).short;
   let text;
   if (n === 1) text = `One syllable: quick to shout${open ? ' and it rings out' : ', if a little easy to lose in a noisy park'}.`;
   else if (n === 2) text = `Two syllables${open ? ' with an open ending' : ''}: ${open ? 'the easiest shape of name to shout across a park' : 'easy to shout'}.`;

@@ -100,6 +100,14 @@ test('nicknames only drop a plural s', () => {
   for (const n of ['Venus', 'Atlas', 'Miles', 'Charles', 'Athens']) assert.ok(!nicknames(n).shown.includes(n.slice(0, -1)), n);
 });
 
+test('a long name gets cut down to a real short form, never the joke one', () => {
+  const yell = n => check(n).checks.find(c => c.id === 'yell').text;
+  assert.match(yell('Penelope'), /turn into Penny\./);
+  assert.match(yell('Pawl McCartney'), /turn into Pawl\./);
+  assert.match(yell('Pistachio'), /turn into something shorter\./);
+  for (const e of NAMES) assert.doesNotMatch(yell(e.name), /-(bean|bug|pants|face|nugget|muffin)\b/, e.name);
+});
+
 test('dealing follows the picks', () => {
   const r = seeded(3);
   for (let i = 0; i < 20; i++) {
