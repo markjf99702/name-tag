@@ -157,6 +157,33 @@ assert.equal(await page.locator('#saved .hang').count(), 20);
 await page.click('#pickBtn');
 await page.waitForSelector('#saved .hang.picked', { timeout: 8000 });
 
+// One draw at a time: a second tap while it's going does nothing, and the toast names the card it lands on.
+const rolls = values => page.evaluate(v => { const real = Math.random; Math.random = () => (v.length ? v.shift() : real()); }, values);
+await rolls([0.1, 0.9]);
+await page.click('#pickBtn');
+await page.click('#pickBtn');
+await page.waitForSelector('#saved .hang.picked', { timeout: 8000 });
+await page.waitForTimeout(800);
+assert.deepEqual(await page.locator('#saved .hang.picked .tagbtn').evaluateAll(els => els.map(e => e.dataset.check)), ['Pickles'], 'two draws at once');
+assert.equal(await page.textContent('#toast'), 'It’s Pickles.');
+
+// Leaving the shortlist, or changing it, stops the draw: no pick, no toast and no error.
+await page.evaluate(() => { document.querySelector('#toast').textContent = ''; });
+await rolls([0.99]);
+await page.click('#pickBtn');
+await page.click('.tabs a[data-tab="find"]');
+await page.waitForTimeout(4500);
+assert.equal(await page.textContent('#toast'), '', 'the draw carried on after leaving the shortlist');
+await page.click('.tabs a[data-tab="list"]');
+await rolls([0.99]);
+await page.click('#pickBtn');
+for (let i = 0; i < 3; i++) await page.locator('#saved [data-remove]').first().click();
+await page.waitForTimeout(4500);
+assert.equal(await page.locator('#saved .hang').count(), 17);
+assert.equal(await page.locator('#saved .hang.picked').count(), 0);
+assert.equal(await page.textContent('#toast'), '', 'the draw carried on after the list changed');
+assert.deepEqual(problems.filter(p => !p.startsWith('failed:')), [], 'problems during the draws');
+
 // Fits a phone: nothing scrolls sideways, on any page.
 for (const tab of ['find', 'check', 'list']) {
   await page.click(`.tabs a[data-tab="${tab}"]`);

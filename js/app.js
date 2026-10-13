@@ -301,7 +301,15 @@ function say(text, rate = 1) {
 
 // ---------- Shortlist ----------
 
+// The Pick one for me draw that's still going, if any. Drawing the list again, or leaving it, stops it.
+let drawing = null;
+function stopDraw() {
+  clearTimeout(drawing);
+  drawing = null;
+}
+
 function renderSaved() {
+  stopDraw();
   const list = state.saved;
   const lede = $('#listLede');
   $('#listActions').hidden = !list.length;
@@ -322,9 +330,10 @@ function renderSaved() {
 
 $('#pickBtn').addEventListener('click', () => {
   const cards = $$('#saved .hang');
-  if (!cards.length) return;
+  if (drawing || !cards.length) return;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const winner = Math.floor(Math.random() * cards.length);
+  const name = cards[winner].querySelector('[data-check]').dataset.check;
   cards.forEach(c => c.classList.remove('lit', 'picked'));
   // A quick spin that slows down before it lands: two or three seconds, however long the list is.
   const steps = reduce || cards.length === 1 ? 0 : Math.min(10 + cards.length * 2, 24);
@@ -334,15 +343,16 @@ $('#pickBtn').addEventListener('click', () => {
     cards.forEach(c => c.classList.remove('lit'));
     const idx = ((at % cards.length) + cards.length) % cards.length;
     if (n >= steps) {
+      drawing = null;
       cards[winner].classList.add('picked');
       cards[winner].scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
-      toast(`It’s ${state.saved[winner].name}.`);
+      toast(`It’s ${name}.`);
       return;
     }
     cards[idx].classList.add('lit');
     n += 1;
     at += 1;
-    setTimeout(tick, 40 + 260 * (n / steps) ** 2);
+    drawing = setTimeout(tick, 40 + 260 * (n / steps) ** 2);
   };
   tick();
 });
@@ -381,6 +391,7 @@ function route() {
   }
   if (current === 'check') renderReport();
   if (current === 'list') renderSaved();
+  else stopDraw();
 }
 window.addEventListener('hashchange', () => { route(); window.scrollTo({ top: 0 }); });
 
