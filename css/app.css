@@ -244,6 +244,9 @@ details > fieldset:first-of-type { margin-top: 8px; }
 
 /* ---------- Check ---------- */
 .check-layout { display: grid; gap: 22px; align-items: start; }
+/* A very long one-word name breaks where it has to, rather than pushing the page wider than the phone. */
+.check-layout > *, .report > * { min-width: 0; }
+.receipt { overflow-wrap: anywhere; }
 .engrave { display: block; margin-top: 16px; }
 .engrave input {
   width: 100%; min-height: 60px; padding: 0 18px; border-radius: 14px;

@@ -162,6 +162,13 @@ await page.waitForFunction(() => document.querySelector('#report .stamp')?.textC
 await page.click('#report [data-save]');
 assert.equal(await page.textContent('#savedCount'), '2');
 
+// A very long one-word name breaks inside the page instead of pushing it wider than the phone. (The page wouldn't
+// scroll sideways either way, because main clips the overflow; the right edge would just be cut off.)
+await page.fill('#nameInput', 'Wolfeschlegelsteinhausenbergerdorffvoral');
+await page.waitForFunction(() => document.querySelector('#report .trouble')?.textContent.includes('Wolfeschlegel'), null, { polling: 100 });
+const overhang = await page.evaluate(() => Math.max(...[...document.querySelectorAll('#page-check .panel')].map(p => p.getBoundingClientRect().right)) - (innerWidth - 16));
+assert.ok(overhang < 1, `with a long name, the Check page runs ${Math.round(overhang)}px past the gutter`);
+
 // Shortlist: both names, stamped, and one gets picked.
 await page.click('.tabs a[data-tab="list"]');
 await page.waitForSelector('#page-list:not([hidden])');
