@@ -115,6 +115,8 @@ $('#againBtn').addEventListener('click', dealNow);
 const letter = $('#letter');
 letter.value = state.letter || '';
 letter.addEventListener('input', () => { state.letter = letter.value.replace(/[^a-z]/gi, '').slice(0, 2); persist(); dealNow(); });
+// Enter (Go on a phone keyboard) in Starts with would send the form and reload the page; it only closes the keyboard.
+$('#criteria').addEventListener('submit', e => { e.preventDefault(); letter.blur(); });
 const easy = $('#easy');
 easy.checked = !!state.easy;
 easy.addEventListener('change', () => { state.easy = easy.checked; persist(); dealNow(); });

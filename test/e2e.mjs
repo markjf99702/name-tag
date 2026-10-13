@@ -81,6 +81,16 @@ assert.match(await page.textContent('#dealt'), /Try fewer picks/);
 await page.fill('#letter', '');
 await page.click('[data-group="themes"] [data-v="puns"]');
 
+// Enter in Starts with closes the keyboard; it doesn't send the form, reload the page and deal a new hand.
+const hand = () => page.locator('#dealt .tagbtn').evaluateAll(els => els.map(e => e.dataset.check));
+await page.fill('#letter', 'b');
+const before = { url: page.url(), hand: await hand() };
+await page.press('#letter', 'Enter');
+await page.waitForTimeout(500);
+assert.equal(page.url(), before.url, 'Enter in Starts with reloaded the page');
+assert.deepEqual(await hand(), before.hand);
+await page.fill('#letter', '');
+
 // Save a name; the tab shows the count.
 const first = await page.locator('#dealt [data-save]').first().getAttribute('data-save');
 await page.locator('#dealt [data-save]').first().click();
