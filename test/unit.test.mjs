@@ -2,7 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { NAMES, THEMES, POPULAR } from '../js/names.js';
-import { syllables, sound } from '../js/sound.js';
+import { syllables, sound, plain } from '../js/sound.js';
 import { check, alternatives, nicknames, displayName } from '../js/check.js';
 import { deal, candidates } from '../js/generate.js';
 
@@ -160,4 +160,28 @@ test('great has to be earned', () => {
   assert.equal(verdict('Nacho'), 'great');
   assert.equal(verdict('Luna'), 'good');
   assert.equal(verdict('Meatball'), 'good');
+});
+
+test('a damaged save keeps what it can, and never leaves a page blank', async () => {
+  const stored = new Map();
+  globalThis.localStorage = { getItem: k => stored.get(k) ?? null, setItem: (k, v) => stored.set(k, String(v)) };
+  const { load, DEFAULTS } = await import('../js/store.js');
+  const from = raw => { stored.set('name-tag:v1', raw); return load(); };
+  // What the page does with it straight away: deal six names, check the last one, and draw the shortlist.
+  const usable = (s, what) => {
+    const ctx = { species: s.species, house: s.house.split(/[,;\n]+/).map(x => x.trim()).filter(Boolean), surname: s.surname.trim() };
+    assert.equal(deal(s, { random: seeded(4) }).picks.length, 6, what);
+    assert.ok(check(s.last || 'Gerald', ctx), what);
+    for (const x of s.saved) check(x.name, { ...ctx, species: x.species }) && plain(x.name);
+  };
+  for (const junk of [{ themes: null }, { coats: null }, { traits: 'all' }, { normal: 'very' }, { sex: 'yes' }, { letter: 5 }, { house: 5 },
+    { surname: null }, { last: {} }, { saved: [null] }, { saved: [{ name: 7 }] }, { saved: 'Rex' }]) usable(from(JSON.stringify(junk)), JSON.stringify(junk));
+  for (const raw of ['{', 'null', '"Luna"', '[]', null]) assert.deepEqual(from(raw), DEFAULTS, raw);
+  // A good copy comes back exactly as it was, with any settings a newer version added.
+  const good = { ...DEFAULTS, species: 'cat', themes: ['snacks'], coats: ['ginger'], size: 'tiny', letter: 'b', easy: false, house: 'Luna', voice: 'Daniel',
+    saved: [{ name: 'Gerald', species: 'cat', at: 1 }, { name: 'Rex', species: 'dragon', at: 2 }], later: 'kept' };
+  assert.deepEqual(from(JSON.stringify(good)), good);
+  assert.deepEqual(from(JSON.stringify({ saved: [{ name: 'Gerald', species: 'cat' }, null, { name: 7 }, 'Rex', { name: 'Kit' }] })).saved,
+    [{ name: 'Gerald', species: 'cat' }, { name: 'Kit', species: 'dog' }]);
+  delete globalThis.localStorage;
 });
