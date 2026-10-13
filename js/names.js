@@ -252,7 +252,7 @@ export const THEMES = [
     Dotty (spotty f), Freckles (spotty), Speckles (spotty), Dapple (spotty horse), Pinto (spotty horse), Brindle (stripy dog),
     Stripes (stripy), Zebra (stripy), Humbug (stripy black white), Barcode (stripy), Pixel (spotty), Jigsaw (spotty),
     Confetti (spotty bouncy), Domino (spotty black white), Panda (black white), Skunk (black white chaotic), Salt (white),
-    Marmalade (ginger !cat), Mango (ginger golden), Tango (ginger), Apricot (ginger), Ginger Snap (ginger), Rusty Nail (ginger)` },
+    Marmalade (ginger !cat), Mango (ginger golden), Tango (ginger), Apricot (ginger), Gingersnap (ginger), Rusty Nail (ginger)` },
 
   { id: 'music', label: 'Musicians', weird: 2, names: `
     Elvis (m), Dolly (f), Ziggy (m), Bowie (m), Prince (m posh), Mozart (m clever bird), Bach (m), Beethoven (m big),

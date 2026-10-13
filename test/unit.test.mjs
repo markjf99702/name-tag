@@ -15,6 +15,18 @@ test('every theme has plenty of names, and the list is big', () => {
   assert.ok(NAMES.length > 1500);
 });
 
+test('no name is in the list twice under another spelling, for the same animal', () => {
+  const groups = new Map();
+  for (const e of NAMES) {
+    const k = e.name.toLowerCase().replace(/[^a-z]/g, '');
+    groups.set(k, [...(groups.get(k) || []), e]);
+  }
+  for (const g of groups.values()) {
+    const animals = g.flatMap(e => (e.only.length ? e.only : ['every']));
+    assert.equal(new Set(animals).size, animals.length, g.map(e => e.name).join(' and '));
+  }
+});
+
 test('every popular name is in the list', () => {
   const known = new Set(NAMES.map(e => e.name.toLowerCase()));
   for (const [sp, list] of Object.entries(POPULAR)) {
