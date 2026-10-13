@@ -96,11 +96,19 @@ const first = await page.locator('#dealt [data-save]').first().getAttribute('dat
 await page.locator('#dealt [data-save]').first().click();
 assert.equal(await page.textContent('#savedCount'), '1');
 
-// Tapping a tag checks it.
+// Tapping a tag checks it, and Back returns to the same spot on Find, next to that tag.
+await page.locator('#dealt .tagbtn').nth(1).scrollIntoViewIfNeeded();
+const spot = await page.evaluate(() => scrollY);
 await page.locator('#dealt .tagbtn').nth(1).click();
 await page.waitForSelector('#page-check:not([hidden])');
 assert.ok((await page.inputValue('#nameInput')).length > 0);
 await page.waitForSelector('#report .receipt');
+await page.goBack();
+await page.waitForSelector('#page-find:not([hidden])');
+await page.waitForFunction(y => Math.abs(scrollY - y) < 5, spot, { timeout: 3000 }).catch(() => {});
+assert.ok(spot > 300 && Math.abs(await page.evaluate(() => scrollY) - spot) < 5, `Back went to ${await page.evaluate(() => scrollY)}, not ${spot}`);
+await page.goForward();
+await page.waitForSelector('#page-check:not([hidden]) #report .receipt');
 
 // Check: a name that sounds like a command, for a dog.
 await page.click('[data-group="checkSpecies"] [data-v="dog"]');

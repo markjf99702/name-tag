@@ -395,7 +395,18 @@ function route() {
   if (current === 'list') renderSaved();
   else stopDraw();
 }
-window.addEventListener('hashchange', () => { route(); window.scrollTo({ top: 0 }); });
+// A tab or the name at the top opens its page at the top. Back and Forward leave the scrolling to the browser,
+// which puts you back where you were, next to the name you went to check.
+let fromLink = false;
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href^="#/"]');
+  if (a && a.hash !== location.hash) fromLink = true;
+});
+window.addEventListener('hashchange', () => {
+  route();
+  if (fromLink) window.scrollTo({ top: 0 });
+  fromLink = false;
+});
 
 // ---------- Start ----------
 
