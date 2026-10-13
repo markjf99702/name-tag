@@ -143,6 +143,20 @@ assert.equal(await page.locator('#saved .hang').count(), 2);
 await page.locator('#saved [data-remove]').first().click();
 assert.equal(await page.locator('#saved .hang').count(), 1);
 
+// Pick one for me takes a few seconds however long the shortlist is (20 names used to take over a minute).
+const many = ['Biscuit', 'Gerald', 'Pickles', 'Juniper', 'Waffles', 'Nacho', 'Pesto', 'Mabel', 'Olive', 'Hank', 'Ziggy', 'Rosie',
+  'Bramble', 'Pepper', 'Tofu', 'Moose', 'Clover', 'Doris', 'Kevin', 'Noodle'];
+await page.evaluate(names => {
+  const s = JSON.parse(localStorage.getItem('name-tag:v1'));
+  s.saved = names.map((name, at) => ({ name, species: 'dog', at }));
+  localStorage.setItem('name-tag:v1', JSON.stringify(s));
+}, many);
+await page.reload();
+await page.waitForSelector('#saved .hang');
+assert.equal(await page.locator('#saved .hang').count(), 20);
+await page.click('#pickBtn');
+await page.waitForSelector('#saved .hang.picked', { timeout: 8000 });
+
 // Fits a phone: nothing scrolls sideways, on any page.
 for (const tab of ['find', 'check', 'list']) {
   await page.click(`.tabs a[data-tab="${tab}"]`);

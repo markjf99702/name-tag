@@ -326,7 +326,8 @@ $('#pickBtn').addEventListener('click', () => {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const winner = Math.floor(Math.random() * cards.length);
   cards.forEach(c => c.classList.remove('lit', 'picked'));
-  const steps = reduce || cards.length === 1 ? 0 : 10 + cards.length * 2;
+  // A quick spin that slows down before it lands: two or three seconds, however long the list is.
+  const steps = reduce || cards.length === 1 ? 0 : Math.min(10 + cards.length * 2, 24);
   let n = 0;
   let at = winner - steps;
   const tick = () => {
@@ -341,7 +342,7 @@ $('#pickBtn').addEventListener('click', () => {
     cards[idx].classList.add('lit');
     n += 1;
     at += 1;
-    setTimeout(tick, 60 + n * n * 1.6);
+    setTimeout(tick, 40 + 260 * (n / steps) ** 2);
   };
   tick();
 });
