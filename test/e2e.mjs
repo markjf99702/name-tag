@@ -112,10 +112,11 @@ const first = await page.locator('#dealt [data-save]').first().getAttribute('dat
 await page.locator('#dealt [data-save]').first().click();
 assert.equal(await page.textContent('#savedCount'), '1');
 
-// Tapping a tag checks it, and Back returns to the same spot on Find, next to that tag.
-await page.locator('#dealt .tagbtn').nth(1).scrollIntoViewIfNeeded();
-const spot = await page.evaluate(() => scrollY);
+// Tapping a tag checks it, and Back returns to the same spot on Find, next to that tag. (The spot is taken as the tap
+// happens: Playwright may scroll a little more while the tags are still swinging in.)
+await page.evaluate(() => document.addEventListener('click', () => { window.tappedAt = scrollY; }, { capture: true, once: true }));
 await page.locator('#dealt .tagbtn').nth(1).click();
+const spot = await page.evaluate(() => window.tappedAt);
 await page.waitForSelector('#page-check:not([hidden])');
 assert.ok((await page.inputValue('#nameInput')).length > 0);
 await page.waitForSelector('#report .receipt');
