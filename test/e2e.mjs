@@ -12,7 +12,12 @@ let pw;
 try { pw = require('playwright'); } catch { pw = require(join(execSync('npm root -g').toString().trim(), 'playwright')); }
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.json': 'application/json' };
+// With down set, the server cuts every connection, like having no signal. (Playwright's setOffline doesn't stop the
+// service worker's own requests, so it can't show that the offline copy works.)
+let down = false;
+const sockets = new Set();
 const server = createServer(async (req, res) => {
+  if (down) { req.socket.destroy(); return; }
   const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
   // A stand-in for another junkdrawer.works tool on the same address, which never starts Name Tag's worker.
   if (path === '/another-tool/') { res.writeHead(200, { 'content-type': 'text/html' }); res.end('<!doctype html><title>Another tool</title>'); return; }
@@ -21,6 +26,8 @@ const server = createServer(async (req, res) => {
   res.writeHead(200, { 'content-type': TYPES[extname(path)] || 'text/html' });
   res.end(body);
 }).listen(0);
+server.on('connection', s => { sockets.add(s); s.on('close', () => sockets.delete(s)); });
+const signal = on => { down = !on; if (down) for (const s of sockets) s.destroy(); };
 const base = `http://localhost:${server.address().port}/`;
 
 // Every file the service worker caches must exist, and every script the page loads must be cached.
@@ -35,7 +42,7 @@ const page = await ctx.newPage();
 const problems = [];
 page.on('pageerror', e => problems.push(e.message));
 page.on('console', m => { if (m.type() === 'error') problems.push(m.text()); });
-page.on('requestfailed', r => problems.push('failed: ' + r.url()));
+page.on('requestfailed', r => { if (!down) problems.push('failed: ' + r.url()); });
 page.on('request', r => { if (!r.url().startsWith(base)) problems.push('left the site: ' + r.url()); });
 
 // A stand-in for the browser's voices, so the test can see what would be said and by which voice.
@@ -210,7 +217,7 @@ await page.waitForTimeout(4500);
 assert.equal(await page.locator('#saved .hang').count(), 17);
 assert.equal(await page.locator('#saved .hang.picked').count(), 0);
 assert.equal(await page.textContent('#toast'), '', 'the draw carried on after the list changed');
-assert.deepEqual(problems.filter(p => !p.startsWith('failed:')), [], 'problems during the draws');
+assert.deepEqual(problems, [], 'problems during the draws');
 
 // Fits a phone: nothing scrolls sideways, on any page.
 for (const tab of ['find', 'check', 'list']) {
@@ -221,13 +228,15 @@ for (const tab of ['find', 'check', 'list']) {
 // Leaves other tools' offline copies alone, and works offline once it has been opened.
 await page.waitForFunction(() => navigator.serviceWorker?.controller, null, { timeout: 10000 });
 assert.ok(await page.evaluate(() => caches.has('another-tool-v1')), 'the service worker deleted another tool’s offline copy');
-await ctx.setOffline(true);
+signal(false);
 await page.reload();
-await page.waitForSelector('#page-list:not([hidden]) #saved .hang', { timeout: 5000 });
-assert.ok(await page.title(), 'the page did not load offline');
-await ctx.setOffline(false);
+await page.waitForSelector('#page-list:not([hidden]) #saved .hang', { timeout: 10000 });
+assert.equal(await page.title(), 'Name Tag', 'the page did not load offline');
+await page.click('.tabs a[data-tab="find"]');
+assert.equal(await page.locator('#dealt .hang').count(), 6, 'no names offline');
+signal(true);
 
-assert.deepEqual(problems.filter(p => !p.startsWith('failed:')), [], 'problems while using it');
+assert.deepEqual(problems, [], 'problems while using it');
 await browser.close();
 server.close();
 console.log('all good');
