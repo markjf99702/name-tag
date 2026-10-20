@@ -292,7 +292,8 @@ function commandCheck(s, species, name) {
 }
 
 function houseCheck(s, name, house) {
-  const others = house.map(displayName).filter(o => o && plain(o) !== '');
+  // Everyone with a letter in their name (K9 counts); a number on its own in the list isn't anyone.
+  const others = house.map(displayName).filter(o => /\p{L}/u.test(o));
   if (!others.length) {
     return { id: 'house', title: 'Other names at home', status: 'info',
       text: 'Add the other pets and people in your house, and this checks nothing sounds alike.' };

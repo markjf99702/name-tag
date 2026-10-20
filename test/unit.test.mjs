@@ -65,6 +65,9 @@ test('clashes at home', () => {
   assert.equal(status('Gerald', 'house', { house: ['Mark', 'Luna'] }), 'good');
   assert.equal(status('Gerald', 'house'), 'info');
   assert.equal(verdict('Kit', { house: ['Kat'] }), 'again');
+  const text = (name, house) => check(name, { house }).checks.find(c => c.id === 'house').text;
+  assert.equal(text('Max', ['Luna', '2', '-']), 'Sounds nothing like Luna.');
+  assert.equal(text('Max', ['K9']), 'Sounds nothing like K9.');
 });
 
 test('the waiting-room test', () => {
