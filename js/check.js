@@ -326,9 +326,13 @@ function vetCheck(name, surname, s, species) {
   if (PRANKS.some(p => joined.includes(p))) {
     found.push({ status: 'bad', text: `Read ${quote(called + '?')} out loud. Slowly. The vet’s receptionist will.` });
   }
-  // A swear word inside one word (Scunthorpe), or spelled out in bits (Sh It), but not one that two words only make
-  // where they meet (Push It, Agent Watson, Mrs Hitchcock). Pranks are read across the words, surname and all.
-  const hidden = tokens.some(t => SWEAR_INSIDE.test(t)) || (tokens.every(t => t.length <= 2) && SWEAR_INSIDE.test(tokens.join('')));
+  // A swear word inside one word (Scunthorpe), or spelled out in bits (Sh It, Wan Ker), but not one that two words only
+  // make where they meet (Push It, Agent Watson, Mrs Hitchcock). Pranks are read across the words, surname and all.
+  // Spelled out in bits: every word a letter or two, or words that run together into exactly a rude word (Wan Ker).
+  const glued = [];
+  for (let i = 0; i < tokens.length; i++) for (let j = i + 2; j <= tokens.length; j++) glued.push(tokens.slice(i, j).join(''));
+  const hidden = tokens.some(t => SWEAR_INSIDE.test(t)) || (tokens.every(t => t.length <= 2) && SWEAR_INSIDE.test(tokens.join('')))
+    || glued.some(g => SWEAR_INSIDE.test(g) && HEARD_BY_WORD.get(g)?.level === 'bad');
   if (hidden && !tokens.some(t => HEARD_BY_WORD.get(t)?.level === 'bad')) {
     found.push({ status: 'bad', text: 'There’s a swear word hiding in it, and someone will find it.' });
   }

@@ -82,11 +82,12 @@ test('the waiting-room test', () => {
 });
 
 test('a swear word only counts when it is inside one word, or spelled out in bits', () => {
-  for (const [n, species] of [['Sushi Tuna', 'fish'], ['Rabbit Chaser'], ['Push It'], ['Agent Watson'], ['Sergeant Watkins'], ['Mrs Hitchcock', 'cat']]) {
+  for (const [n, species] of [['Sushi Tuna', 'fish'], ['Rabbit Chaser'], ['Push It'], ['Agent Watson'], ['Sergeant Watkins'], ['Mrs Hitchcock', 'cat'], ['Obi-Wan Kenobi']]) {
     assert.doesNotMatch(check(n, { species }).checks.find(c => c.id === 'vet').text, /swear word/, n);
     assert.notEqual(verdict(n, { species }), 'dont', n);
   }
-  for (const n of ['Sh It', 'S-H-I-T', 'Scunthorpe']) {
+  // Spelled out in bits: one or two letters at a time, or words that run together into exactly a rude word.
+  for (const n of ['Sh It', 'S-H-I-T', 'Scunthorpe', 'Wan Ker', 'Fuc K']) {
     assert.match(check(n).checks.find(c => c.id === 'vet').text, /swear word hiding/, n);
     assert.equal(verdict(n), 'dont', n);
   }
