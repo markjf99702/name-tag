@@ -282,6 +282,23 @@ assert.equal(await page.locator('#saved .hang.picked').count(), 0);
 assert.equal(await page.textContent('#toast'), '', 'the draw carried on after the list changed');
 assert.deepEqual(problems, [], 'problems during the draws');
 
+// Copy the list: where the clipboard is refused, the list shows up under the buttons, selected, ready to copy by hand.
+const clipboard = writeText => page.evaluate(how => Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+  writeText: how === 'refuse' ? () => Promise.reject(new DOMException('Write permission denied.', 'NotAllowedError')) : text => { window.copied = text; return Promise.resolve(); },
+} }), writeText);
+await clipboard('refuse');
+await page.click('#copyBtn');
+await page.waitForSelector('#copyText:not([hidden])');
+const shown = await page.evaluate(() => { const t = document.querySelector('#copyText'); return { text: t.value, focused: document.activeElement === t, from: t.selectionStart, to: t.selectionEnd }; });
+assert.ok(shown.text.startsWith('Pet names we like:\n') && shown.text.split('\n').length === 1 + 17, `the list shown: ${shown.text}`);
+assert.ok(shown.focused && shown.from === 0 && shown.to === shown.text.length, `the list isn’t selected: ${JSON.stringify(shown)}`);
+assert.equal(await page.textContent('#toast'), 'Couldn’t copy here, so the list is selected: copy it from there.');
+await clipboard('allow');
+await page.click('#copyBtn');
+await page.waitForFunction(() => document.querySelector('#toast').textContent === 'Copied. Paste it anywhere.');
+assert.equal(await page.evaluate(() => window.copied), shown.text);
+assert.equal(await page.locator('#copyText').getAttribute('hidden'), '', 'the list stayed on show after it was copied');
+
 // Fits a phone: nothing scrolls sideways, on any page.
 for (const tab of ['find', 'check', 'list']) {
   await page.click(`.tabs a[data-tab="${tab}"]`);

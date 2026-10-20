@@ -322,6 +322,7 @@ function stopDraw() {
 
 function renderSaved() {
   stopDraw();
+  $('#copyText').hidden = true; // the list it held may have changed
   const list = state.saved;
   const lede = $('#listLede');
   $('#listActions').hidden = !list.length;
@@ -370,15 +371,25 @@ $('#pickBtn').addEventListener('click', () => {
 });
 
 $('#copyBtn').addEventListener('click', async () => {
-  const text = state.saved.map(s => {
+  const text = `Pet names we like:\n${state.saved.map(s => {
     const r = check(s.name, { ...ctx(), species: s.species });
     return `${s.name} (${r ? r.verdict.label.toLowerCase() : ''})`;
-  }).join('\n');
+  }).join('\n')}`;
+  const box = $('#copyText');
   try {
-    await navigator.clipboard.writeText(`Pet names we like:\n${text}`);
+    await navigator.clipboard.writeText(text);
+    box.hidden = true;
     toast('Copied. Paste it anywhere.');
   } catch {
-    toast('Couldn’t copy here. Try a screenshot instead.');
+    // Some places refuse the clipboard (the one-file copy inside another page, say), so the list goes where it can be
+    // copied by hand, already selected.
+    box.value = text;
+    box.rows = Math.min(text.split('\n').length, 10);
+    box.hidden = false;
+    box.focus();
+    box.select();
+    box.setSelectionRange(0, text.length);
+    toast('Couldn’t copy here, so the list is selected: copy it from there.');
   }
 });
 

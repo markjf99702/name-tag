@@ -318,6 +318,11 @@ details > fieldset:first-of-type { margin-top: 8px; }
 /* ---------- Shortlist ---------- */
 .list-head { margin-bottom: 26px; }
 .list-head .row { margin-top: 14px; }
+.copy-text {
+  display: block; width: 100%; margin-top: 14px; padding: 10px 12px; resize: vertical;
+  border: 1.5px solid var(--line); border-radius: 10px; background: var(--paper-2); color: var(--ink);
+  font: 600 .92rem/1.5 var(--body);
+}
 /* The lift goes on the button, since the tag's own transform is held by its swing-in. */
 .hang.lit .tagbtn { transform: translateY(-4px) rotate(2deg); }
 .hang.lit .tag { filter: var(--tag-shadow) brightness(1.15); }
