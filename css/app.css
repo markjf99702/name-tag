@@ -313,6 +313,7 @@ details > fieldset:first-of-type { margin-top: 8px; }
 .empty-report { justify-items: center; }
 .empty-report .hang.big { opacity: .9; }
 .empty-report .empty { max-width: 460px; }
+.empty-report .whole { grid-column: 1 / -1; } /* a one-line note, with no tag beside it */
 
 /* ---------- Shortlist ---------- */
 .list-head { margin-bottom: 26px; }

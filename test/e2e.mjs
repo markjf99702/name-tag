@@ -186,6 +186,15 @@ await page.fill('#nameInput', 'K9');
 await page.waitForFunction(() => document.querySelector('#report .tag')?.getAttribute('aria-label').startsWith('K9,'), null, { polling: 100 });
 assert.match(await page.textContent('#report .verdict'), /Numbers on a tag look like a phone number/);
 
+// Something typed with no letters in it gets a line saying so; an empty box still gets the blank tag.
+const noLetters = () => page.waitForFunction(() => document.querySelector('#report')?.textContent.trim() === 'There are no letters in that to engrave.', null, { polling: 100 });
+await page.fill('#nameInput', '123');
+await noLetters();
+await page.fill('#nameInput', '');
+await page.waitForFunction(() => document.querySelector('#report .tag')?.getAttribute('aria-label').startsWith('Your pet?'), null, { polling: 100 });
+await page.fill('#nameInput', '🐶');
+await noLetters();
+
 // A very long one-word name breaks inside the page instead of pushing it wider than the phone. (The page wouldn't
 // scroll sideways either way, because main clips the overflow; the right edge would just be cut off.)
 await page.fill('#nameInput', 'Wolfeschlegelsteinhausenbergerdorffvoral');

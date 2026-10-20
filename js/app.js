@@ -215,6 +215,11 @@ function renderReport() {
   const r = check(input.value, ctx());
   if (!r) {
     lastStamp = '';
+    // Something typed with nothing in it to engrave (123, !!!, an emoji) gets a line saying so, not the blank tag.
+    if (input.value.trim()) {
+      box.innerHTML = '<div class="report empty-report"><p class="empty whole">There are no letters in that to engrave.</p></div>';
+      return;
+    }
     box.innerHTML = `<div class="report empty-report">
       <div class="hang big">${tagSVG('Your pet?', { species: state.species, metal: 'steel' })}</div>
       <p class="empty">The name gets engraved here as you type, then tested: can you shout it, does it sound like “sit” or “no”, does it rhyme with the cat, and will the vet snigger reading it out.</p>
