@@ -61,10 +61,12 @@ await page.addInitScript(() => {
   Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
 });
 
-// Every tool at junkdrawer.works/… shares one address, and so one cache storage. Another tool's offline copy,
-// made before Name Tag's worker starts, has to survive it (checked once the worker is in charge, near the end).
+// Every tool at junkdrawer.works/… shares one address, and so one cache storage. Other tools' offline copies, made
+// before Name Tag's worker starts, have to survive it, even one whose name starts like Name Tag's; an old copy of
+// Name Tag's own goes (checked once the worker is in charge, near the end).
 await page.goto(base + 'another-tool/');
-await page.evaluate(() => caches.open('another-tool-v1').then(c => c.put('index.html', new Response('another tool'))));
+await page.evaluate(() => Promise.all(['another-tool-v1', 'name-tag-x-v1', 'name-tag-v0']
+  .map(name => caches.open(name).then(c => c.put('index.html', new Response(name))))));
 await page.goto(base);
 await page.evaluate(() => document.fonts.ready);
 
@@ -261,6 +263,8 @@ for (const tab of ['find', 'check', 'list']) {
 // Leaves other tools' offline copies alone, and works offline once it has been opened.
 await page.waitForFunction(() => navigator.serviceWorker?.controller, null, { timeout: 10000 });
 assert.ok(await page.evaluate(() => caches.has('another-tool-v1')), 'the service worker deleted another tool’s offline copy');
+assert.ok(await page.evaluate(() => caches.has('name-tag-x-v1')), 'the service worker deleted the offline copy of a tool whose name starts like Name Tag’s');
+assert.equal(await page.evaluate(() => caches.has('name-tag-v0')), false, 'the service worker kept Name Tag’s own old copy');
 signal(false);
 await page.reload();
 await page.waitForSelector('#page-list:not([hidden]) #saved .hang', { timeout: 10000 });
