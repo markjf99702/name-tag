@@ -288,6 +288,19 @@ for (const tab of ['find', 'check', 'list']) {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `the ${tab} page scrolls sideways on a phone`);
 }
 
+// The small buttons are big enough for a thumb, the Try row stays on two lines, and two tags still hang side by side.
+const boxes = sel => page.locator(sel).evaluateAll(els => els.map(e => { const r = e.getBoundingClientRect(); return { top: Math.round(r.top), height: r.height }; }));
+await page.click('.tabs a[data-tab="check"]');
+await page.waitForSelector('#page-check:not([hidden])');
+const tries = await boxes('.try button');
+assert.ok(Math.min(...tries.map(b => b.height)) >= 36 && new Set(tries.map(b => b.top)).size <= 2, `the Try buttons: ${JSON.stringify(tries)}`);
+assert.ok(Math.min(...(await boxes('[data-group="checkSpecies"] .chip')).map(b => b.height)) >= 38, 'the animal buttons on Check are too small to tap');
+await page.click('.tabs a[data-tab="list"]');
+await page.waitForSelector('#page-list:not([hidden]) #saved .mini');
+assert.ok(Math.min(...(await boxes('#saved .mini')).map(b => b.height)) >= 40, 'the Remove and Check buttons are too small to tap');
+const [one, two] = await boxes('#saved .hang');
+assert.equal(one.top, two.top, 'two tags no longer fit side by side');
+
 // Leaves other tools' offline copies alone, and works offline once it has been opened.
 await page.waitForFunction(() => navigator.serviceWorker?.controller, null, { timeout: 10000 });
 assert.ok(await page.evaluate(() => caches.has('another-tool-v1')), 'the service worker deleted another tool’s offline copy');

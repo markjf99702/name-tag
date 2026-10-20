@@ -153,7 +153,7 @@ legend { font-weight: 700; padding: 0; margin-bottom: 8px; }
 .chips.seg .chip { border-radius: 0; margin-left: -1.5px; flex: 1 1 auto; }
 .chips.seg .chip:first-child { border-radius: 999px 0 0 999px; margin-left: 0; }
 .chips.seg .chip:last-child { border-radius: 0 999px 999px 0; }
-.chips.small .chip { min-height: 34px; font-size: .85rem; padding: 0 11px; }
+.chips.small .chip { min-height: 38px; font-size: .85rem; padding: 0 11px; }
 
 details { margin-top: 18px; border-top: 1px dashed var(--line); padding-top: 14px; }
 summary { font-weight: 700; cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; min-height: 32px; }
@@ -214,7 +214,7 @@ details > fieldset:first-of-type { margin-top: 8px; }
 }
 .acts { display: flex; gap: 6px; }
 .mini {
-  min-height: 34px; padding: 0 12px; border-radius: 999px; border: 1.5px solid var(--line);
+  min-height: 40px; padding: 0 12px; border-radius: 999px; border: 1.5px solid var(--line);
   background: var(--paper); font-weight: 700; font-size: .85rem;
 }
 .mini:hover { border-color: var(--ink); }
@@ -257,7 +257,7 @@ details > fieldset:first-of-type { margin-top: 8px; }
 .engrave input::placeholder { color: var(--muted); opacity: .7; }
 .engraver .chips { margin-top: 14px; }
 .try { margin-top: 16px; color: var(--muted); font-size: .9rem; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.try button { border: 0; background: var(--paper-2); border-radius: 999px; padding: 5px 11px; font-weight: 700; font-size: .85rem; color: var(--ink); }
+.try button { min-height: 36px; border: 0; background: var(--paper-2); border-radius: 999px; padding: 5px 11px; font-weight: 700; font-size: .85rem; color: var(--ink); }
 .try button:hover { background: var(--line); }
 
 .report { display: grid; gap: 22px; }
