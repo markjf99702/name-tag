@@ -96,11 +96,9 @@ function oneWord(w) {
   return { level: 'good', why: 'plain' };
 }
 
-// Letters next to a number are read out one at a time (K9, R2-D2, C3PO), so in a word with a number in it, only a run
-// of letters long enough to be a word of its own (the Rex in Rex2) gets tested.
-const partsToSay = name => plain(name).split(/[^a-z0-9]+/)
-  .flatMap(w => (/\d/.test(w) ? w.split(/\d+/).filter(p => p.length > 2) : [w]))
-  .filter(Boolean);
+// Letters that go with a number are read out one at a time (K9, K-9, R2-D2, C-3PO, BB-8), so in a name with a number in
+// it, only a run of letters long enough to be a word of its own (the Rex in Rex2, the Agent in Agent 99) gets tested.
+const partsToSay = name => (/\d/.test(name) ? splitWords(name).filter(w => w.length > 2) : splitWords(name));
 
 // The hardest word decides. Null when there's nothing to test but numbers and the letters read out with them.
 export function sayability(name) {

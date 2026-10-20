@@ -130,8 +130,13 @@ test('numbers stay in the name, and the numbers note leads', () => {
     assert.match(r.verdict.line, /^Numbers on a tag look like a phone number/, n);
     assert.notEqual(r.verdict.id, 'dont', n);
   }
-  // The letters read out with a number aren't tested on their own; a word next to one still is.
+  // The letters read out with a number aren't tested on their own, with a hyphen or a space between them or not; a
+  // word next to one still is.
   assert.equal(status('K9', 'say'), undefined);
+  for (const n of ['K-9', 'K 9', 'C-3PO', 'BB-8']) {
+    assert.equal(status(n, 'say'), undefined, n);
+    assert.match(check(n).verdict.line, /^Numbers on a tag look like a phone number/, n);
+  }
   assert.equal(status('Agent 99', 'say'), 'good');
   assert.equal(verdict('Xqzvbrt9'), 'dont');
   assert.match(check('K9', { surname: 'Farrell' }).trouble, /^K9 \w+ Farrell$/);
