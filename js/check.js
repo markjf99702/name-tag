@@ -317,7 +317,10 @@ function vetCheck(name, surname, s, species) {
   if (PRANKS.some(p => joined.includes(p))) {
     found.push({ status: 'bad', text: `Read ${quote(called + '?')} out loud. Slowly. The vet’s receptionist will.` });
   }
-  if (SWEAR_INSIDE.test(tokens.join('')) && !tokens.some(t => HEARD_BY_WORD.get(t)?.level === 'bad')) {
+  // A swear word inside one word (Scunthorpe), or spelled out in bits (Sh It), but not one that two words only make
+  // where they meet (Push It, Agent Watson, Mrs Hitchcock). Pranks are read across the words, surname and all.
+  const hidden = tokens.some(t => SWEAR_INSIDE.test(t)) || (tokens.every(t => t.length <= 2) && SWEAR_INSIDE.test(tokens.join('')));
+  if (hidden && !tokens.some(t => HEARD_BY_WORD.get(t)?.level === 'bad')) {
     found.push({ status: 'bad', text: 'There’s a swear word hiding in it, and someone will find it.' });
   }
   for (const t of tokens) {

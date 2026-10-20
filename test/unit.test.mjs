@@ -78,6 +78,18 @@ test('the waiting-room test', () => {
   assert.equal(status('Mom', 'vet'), 'warn');
 });
 
+test('a swear word only counts when it is inside one word, or spelled out in bits', () => {
+  for (const [n, species] of [['Sushi Tuna', 'fish'], ['Rabbit Chaser'], ['Push It'], ['Agent Watson'], ['Sergeant Watkins'], ['Mrs Hitchcock', 'cat']]) {
+    assert.doesNotMatch(check(n, { species }).checks.find(c => c.id === 'vet').text, /swear word/, n);
+    assert.notEqual(verdict(n, { species }), 'dont', n);
+  }
+  for (const n of ['Sh It', 'S-H-I-T', 'Scunthorpe']) {
+    assert.match(check(n).checks.find(c => c.id === 'vet').text, /swear word hiding/, n);
+    assert.equal(verdict(n), 'dont', n);
+  }
+  assert.equal(verdict('Mike Hunt'), 'dont');
+});
+
 test('good names do well', () => {
   for (const n of ['Pickles', 'Gerald', 'Biscuit', 'Juniper', 'Waffles']) assert.ok(['great', 'good'].includes(verdict(n)), n);
   assert.equal(verdict('Bartholomew Montgomery the Third', { species: 'cat' }), 'again');
