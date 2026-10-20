@@ -216,6 +216,14 @@ test('nonsense gets told off, unusual but sayable names do not', () => {
   assert.equal(status('Luna', 'say'), 'good');
 });
 
+test('two words run together can be said, even with four consonants where they meet', () => {
+  for (const n of ['Barksworth', 'Matchstick', 'Kingsbridge', 'Hartsfield', 'Wolfsbane']) assert.ok(['good', 'ok'].includes(status(n, 'say')), n);
+  assert.notEqual(status('Sir Reginald Barksworth', 'say'), 'warn');
+  assert.notEqual(verdict('Sir Reginald Barksworth'), 'dont');
+  // Four consonants that don't split into an ending and a start names have are still hard to say.
+  for (const n of ['Szczepan', 'Intwdaan']) assert.equal(status(n, 'say'), 'warn', n);
+});
+
 test('great has to be earned', () => {
   const tally = { great: 0, total: 0 };
   for (const e of NAMES) {

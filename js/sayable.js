@@ -52,6 +52,34 @@ const keyboardRun = w => {
 // Longest run of consonant sounds, counting ch, sh, th and the like as one.
 const consonantRun = w => Math.max(0, ...(w.replace(/ch|sh|th|ph|gh|ck|ng|wh|qu/g, 'C').match(/[^aeiouy]+/g) || ['']).map(r => r.length));
 
+// Four consonants in a row are often where two words meet: Barks|worth, Match|stick, Kings|bridge. That's easy to say
+// when the run splits into an ending and a start that plenty of names in the list have: at least three end with the
+// consonants before the split, and at least three start with the ones after it. An s joining the two (Kings|bridge,
+// Wolfs|bane) is looked past, to the ending before it. Whole clusters, not just two letters, so In|twdaan doesn't pass.
+const COMMON = 3;
+const STARTS = new Map();
+const ENDS = new Map();
+for (const w of KNOWN) {
+  const [first] = w.match(/^[^aeiouy]*/);
+  const [last] = w.match(/[^aeiouy]*$/);
+  STARTS.set(first, (STARTS.get(first) || 0) + 1);
+  ENDS.set(last, (ENDS.get(last) || 0) + 1);
+}
+const common = (counts, letters) => (counts.get(letters) || 0) >= COMMON;
+const endsLikeAWord = a => {
+  const [end] = a.match(/[^aeiouy]*$/);
+  return common(ENDS, end) || (end.length > 1 && end.endsWith('s') && common(ENDS, end.slice(0, -1)));
+};
+const startsLikeAWord = b => common(STARTS, b.match(/^[^aeiouy]*/)[0]);
+const twoWords = w => {
+  for (let i = 2; i < w.length - 1; i++) {
+    const [a, b] = [w.slice(0, i), w.slice(i)];
+    if (/[aeiouy]/.test(w[i - 1] + w[i]) || !/[aeiouy]/.test(a) || !/[aeiouy]/.test(b)) continue;
+    if (consonantRun(a) < 4 && consonantRun(b) < 4 && endsLikeAWord(a) && startsLikeAWord(b)) return true;
+  }
+  return false;
+};
+
 const LEVEL = { good: 0, ok: 1, warn: 2, bad: 3 };
 
 function oneWord(w) {
@@ -63,7 +91,7 @@ function oneWord(w) {
   const run = consonantRun(w);
   const score = ordinariness(w);
   if (run >= 5 || score < -6) return { level: 'bad', why: 'mash' };
-  if (run >= 4 || score < -5.2) return { level: 'warn', why: 'hard' };
+  if ((run >= 4 && !twoWords(w)) || score < -5.2) return { level: 'warn', why: 'hard' };
   if (score < -4) return { level: 'ok', why: 'unusual' };
   return { level: 'good', why: 'plain' };
 }
