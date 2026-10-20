@@ -258,6 +258,11 @@ const SAY = {
   mash: ['bad', 'Nobody could read this out loud. It looks like someone sat on the keyboard.'],
 };
 
+// The sound tests read English spelling. A name with none of its letters in the English alphabet (Барсик, ポチ, 小白)
+// gets this note in their place. Accented ones (Zoë, José) are read without their accents and get the tests.
+const otherAlphabet = () => ({ id: 'alphabet', title: 'How it sounds', status: 'ok',
+  text: 'The sound tests only work for names spelled in the English alphabet, so they’re left out.' });
+
 // Left out when there's nothing to say but numbers and the letters read out with them (K9), so the numbers note leads.
 function sayCheck(name) {
   const said = sayability(name);
@@ -383,7 +388,11 @@ function spellCheck(name, raw) {
   const say = pronounceNote(key);
   if (say) { status = worse(status, 'warn'); bits.unshift(say); }
   if (/['’]/.test(name)) { status = worse(status, 'ok'); bits.push('The apostrophe will get dropped half the time.'); }
-  if (!bits.length) bits.push('Spelled the way it sounds.');
+  if (!bits.length) {
+    // How it sounds is a sound test too, so a name in another alphabet doesn't get told it's spelled the way it sounds.
+    if (!/[a-z]/.test(key)) return null;
+    bits.push('Spelled the way it sounds.');
+  }
   return { id: 'spell', title, status, text: bits.join(' ') };
 }
 
@@ -451,12 +460,13 @@ export function check(raw, ctx = {}) {
   const name = displayName(raw);
   if (!name || !/\p{L}/u.test(name)) return null;
   const s = soundOf(name);
+  const english = /[a-z]/.test(plain(name));
   const checks = [
     vetCheck(name, ctx.surname, s, species),
-    sayCheck(name),
-    commandCheck(s, species, name),
-    yellCheck(s, species, name),
-    houseCheck(s, name, house),
+    english ? sayCheck(name) : otherAlphabet(),
+    english && commandCheck(s, species, name),
+    english && yellCheck(s, species, name),
+    english && houseCheck(s, name, house),
     popularCheck(name, species),
     spellCheck(name, String(raw)),
     tagCheck(name),
@@ -471,7 +481,7 @@ export function check(raw, ctx = {}) {
   if (vet.status === 'bad' || say?.status === 'bad' || cmd?.exact) id = 'dont';
   // Great has to be earned: no notes at all, and one of the easiest shapes of name to shout.
   const clean = checks.every(c => RANK[c.status] <= RANK.good);
-  const shouty = species === 'fish' || species === 'reptile' || yell.strength >= 2.75;
+  const shouty = species === 'fish' || species === 'reptile' || yell?.strength >= 2.75;
   if (id === 'great' && !(clean && shouty)) id = 'good';
   const order = [...checks].sort((a, b) => RANK[b.status] - RANK[a.status]);
   const worst = order[0];

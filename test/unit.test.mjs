@@ -134,6 +134,23 @@ test('numbers stay in the name, and the numbers note leads', () => {
   assert.match(check('K9', { surname: 'Farrell' }).trouble, /^K9 \w+ Farrell$/);
 });
 
+test('a name in another alphabet skips the sound tests, and says so', () => {
+  for (const [n, species] of [['Барсик', 'cat'], ['ポチ', 'dog'], ['小白', 'dog'], ['Λούνα', 'cat']]) {
+    const r = check(n, { species, house: ['Luna'] });
+    assert.notEqual(r.verdict.id, 'dont', n);
+    assert.match(r.verdict.line, /^The sound tests only work for names spelled in the English alphabet/, n);
+    const ids = r.checks.map(c => c.id);
+    for (const id of ['say', 'yell', 'command', 'house']) assert.ok(!ids.includes(id), `${n} got the ${id} test`);
+    assert.doesNotMatch(r.checks.map(c => c.text).join(' '), /the way it sounds/, n);
+    assert.deepEqual(r.nicknames, [], n);
+  }
+  // Accented names are in the English alphabet, and get every test.
+  for (const n of ['Zoë', 'José']) {
+    const ids = check(n, { species: 'dog', house: ['Luna'] }).checks.map(c => c.id);
+    for (const id of ['say', 'yell', 'command', 'house']) assert.ok(ids.includes(id), `${n} missed the ${id} test`);
+  }
+});
+
 test('nicknames only drop a plural s', () => {
   assert.equal(nicknames('Pickles').shown[0], 'Pickle');
   assert.equal(nicknames('Mittens').shown[0], 'Mitten');

@@ -250,7 +250,7 @@ function renderReport() {
         ${r.checks.map(c => `<li class="c-${c.status}"><span class="ico" role="img" aria-label="${STATUS[c.status]}">${ICON[c.status]}</span><div><b>${esc(c.title)}</b><p>${esc(c.text)}</p></div></li>`).join('')}
       </ul>
       <div class="extras">
-        <div><h3>It’ll get called</h3><p class="nicks">${r.nicknames.map(n => `<span>${esc(n)}</span>`).join('')}</p></div>
+        ${r.nicknames.length ? `<div><h3>It’ll get called</h3><p class="nicks">${r.nicknames.map(n => `<span>${esc(n)}</span>`).join('')}</p></div>` : ''}
         <div><h3>When it’s in trouble</h3><p class="trouble">${esc(r.trouble)}!</p></div>
       </div>
     </div>

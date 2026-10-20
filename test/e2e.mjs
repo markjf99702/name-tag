@@ -195,6 +195,13 @@ await page.waitForFunction(() => document.querySelector('#report .tag')?.getAttr
 await page.fill('#nameInput', '🐶');
 await noLetters();
 
+// A name in another alphabet isn't called keyboard mash, and doesn't get an empty It'll get called.
+await page.fill('#nameInput', 'Барсик');
+await page.waitForFunction(() => document.querySelector('#report .tag')?.getAttribute('aria-label').startsWith('Барсик,'), null, { polling: 100 });
+assert.notEqual(await page.textContent('#report .stamp'), 'Please don’t');
+assert.match(await page.textContent('#report .verdict'), /only work for names spelled in the English alphabet/);
+assert.equal(await page.locator('#report .nicks').count(), 0, 'an empty It’ll get called');
+
 // A very long one-word name breaks inside the page instead of pushing it wider than the phone. (The page wouldn't
 // scroll sideways either way, because main clips the overflow; the right edge would just be cut off.)
 await page.fill('#nameInput', 'Wolfeschlegelsteinhausenbergerdorffvoral');
