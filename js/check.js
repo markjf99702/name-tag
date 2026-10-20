@@ -14,9 +14,9 @@ export function soundOf(name) {
   return cache.get(k);
 }
 
-// "pickles" -> "Pickles", "mcFLY" stays as typed.
+// "pickles" -> "Pickles", "mcFLY" stays as typed. Numbers stay too (K9, R2-D2), for the tag and the tests.
 export function displayName(raw) {
-  const s = String(raw || '').replace(/[^\p{L}\p{M}\s'\-.]/gu, '').replace(/\s+/g, ' ').trim();
+  const s = String(raw || '').replace(/[^\p{L}\p{M}0-9\s'\-.]/gu, '').replace(/\s+/g, ' ').trim();
   if (!s) return '';
   if (s === s.toLowerCase() || s === s.toUpperCase()) {
     return s.toLowerCase().replace(/(^|[\s\-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
@@ -258,8 +258,11 @@ const SAY = {
   mash: ['bad', 'Nobody could read this out loud. It looks like someone sat on the keyboard.'],
 };
 
+// Left out when there's nothing to say but numbers and the letters read out with them (K9), so the numbers note leads.
 function sayCheck(name) {
-  const [status, text] = SAY[sayability(name).why];
+  const said = sayability(name);
+  if (!said) return null;
+  const [status, text] = SAY[said.why];
   return { id: 'say', title: 'Can you say it?', status, text };
 }
 
@@ -465,7 +468,7 @@ export function check(raw, ctx = {}) {
   const cmd = checks.find(c => c.id === 'command');
   const say = checks.find(c => c.id === 'say');
   const yell = checks.find(c => c.id === 'yell');
-  if (vet.status === 'bad' || say.status === 'bad' || cmd?.exact) id = 'dont';
+  if (vet.status === 'bad' || say?.status === 'bad' || cmd?.exact) id = 'dont';
   // Great has to be earned: no notes at all, and one of the easiest shapes of name to shout.
   const clean = checks.every(c => RANK[c.status] <= RANK.good);
   const shouty = species === 'fish' || species === 'reptile' || yell.strength >= 2.75;

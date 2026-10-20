@@ -117,6 +117,23 @@ test('odds and ends', () => {
   for (const a of alts) assert.ok(['great', 'good'].includes(verdict(a)), a);
 });
 
+test('numbers stay in the name, and the numbers note leads', () => {
+  assert.equal(displayName('k9'), 'K9');
+  assert.equal(displayName('r2-d2'), 'R2-D2');
+  assert.equal(displayName('Agent 99'), 'Agent 99');
+  for (const n of ['K9', 'R2-D2', 'Agent 99', 'Rex2']) {
+    const r = check(n);
+    assert.equal(r.name, n);
+    assert.match(r.verdict.line, /^Numbers on a tag look like a phone number/, n);
+    assert.notEqual(r.verdict.id, 'dont', n);
+  }
+  // The letters read out with a number aren't tested on their own; a word next to one still is.
+  assert.equal(status('K9', 'say'), undefined);
+  assert.equal(status('Agent 99', 'say'), 'good');
+  assert.equal(verdict('Xqzvbrt9'), 'dont');
+  assert.match(check('K9', { surname: 'Farrell' }).trouble, /^K9 \w+ Farrell$/);
+});
+
 test('nicknames only drop a plural s', () => {
   assert.equal(nicknames('Pickles').shown[0], 'Pickle');
   assert.equal(nicknames('Mittens').shown[0], 'Mitten');
