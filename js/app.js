@@ -91,7 +91,7 @@ function dealNow() {
   $('#againBtn').hidden = total <= picks.length;
   $('#dealt').innerHTML = total
     ? picks.map((p, i) => hangCard(p.name, state.species, { i, why: p.reasons.join(' · ') })).join('')
-    : '<p class="empty">Try fewer picks. The coat, personality and letter choices narrow things down fastest.</p>';
+    : '<p class="empty">Try fewer picks. The letter and the themes narrow things down fastest.</p>';
 }
 
 function hangCard(name, species, { i = 0, why = '', stamp = null, removable = false } = {}) {
