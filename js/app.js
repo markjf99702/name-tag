@@ -73,6 +73,7 @@ document.addEventListener('click', e => {
 // ---------- Find ----------
 
 let dealt = [];
+let dealtFor = ''; // the animal the names on Find were dealt for
 let recent = [];
 const savedKey = (name, species) => `${plain(name)}|${species}`;
 const isSaved = (name, species) => state.saved.some(s => savedKey(s.name, s.species) === savedKey(name, species));
@@ -81,6 +82,7 @@ function dealNow() {
   const { picks, total, fit } = deal(state, { avoid: recent });
   recent = [...picks.map(p => p.name), ...recent].slice(0, 36);
   dealt = picks;
+  dealtFor = state.species;
   const h = $('#results-h');
   if (!total) h.textContent = 'Nothing fits all of that';
   else if (!fit) h.textContent = 'Nothing fits all of that, so these are the closest';
@@ -409,6 +411,8 @@ function route() {
     if (a.dataset.tab === current) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   }
+  // The animal changed on Check, or with a shortlisted name's Check button: deal again rather than show the last one's names.
+  if (current === 'find' && dealtFor !== state.species) dealNow();
   if (current === 'check') renderReport();
   if (current === 'list') renderSaved();
   else stopDraw();

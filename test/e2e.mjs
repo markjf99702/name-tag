@@ -153,6 +153,13 @@ await page.fill('#nameInput', 'Bo');
 await page.waitForFunction(() => document.querySelector('#report .verdict')?.textContent.includes('Rhymes with “no”'), null, { polling: 100 });
 assert.equal(await page.textContent('#report .stamp'), 'It’ll do');
 
+// Picking dog on Check deals Find again when it opens, rather than leaving the cat names it had there.
+await page.click('.tabs a[data-tab="find"]');
+await page.waitForSelector('#page-find:not([hidden])');
+assert.deepEqual(await page.locator('#dealt .tagbtn').evaluateAll(els => [...new Set(els.map(e => e.dataset.species))]), ['dog'], 'Find still shows the last animal’s names');
+await page.click('.tabs a[data-tab="check"]');
+await page.waitForSelector('#page-check:not([hidden]) #report .receipt');
+
 // Calling it uses the most natural voice at a normal pitch; the menu offers the English voices and remembers a pick.
 assert.equal(await page.locator('#voicePick').count(), 0, 'a voice menu with no voices');
 await page.evaluate(() => window.voicesArrive());
